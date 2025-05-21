@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { LocationTracker } from "./map/LocationTracker";
 import { MapBackground } from "./map/MapBackground";
@@ -19,8 +20,8 @@ export function MapScreen() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<UserLocation | null>(null);
 
-  const { user } = useAuth();
-  const isAdmin = user?.email === "admin@phillboard.com" || user?.email?.endsWith("@lovable.ai");
+  const { user, isAdmin } = useAuth();
+  const userIsAdmin = isAdmin(user);
   
   // Add a timeout to prevent infinite loading state
   useEffect(() => {
@@ -48,14 +49,14 @@ export function MapScreen() {
   };
 
   const handleMapClick = (location: UserLocation) => {
-    if (isAdmin && isAdminMode) {
+    if (userIsAdmin && isAdminMode) {
       setSelectedLocation(location);
       setIsPlaceDialogOpen(true);
     }
   };
 
   const toggleAdminMode = () => {
-    if (isAdmin) {
+    if (userIsAdmin) {
       setIsAdminMode(!isAdminMode);
     }
   };
@@ -90,7 +91,7 @@ export function MapScreen() {
       {/* Admin mode toggle button - extracted to its own component */}
       <AdminModeToggle
         isAdminMode={isAdminMode}
-        isAdmin={isAdmin}
+        isAdmin={userIsAdmin}
         onToggle={toggleAdminMode}
       />
       

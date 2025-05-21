@@ -12,6 +12,7 @@ interface AuthContextProps {
   signUp: (email: string, password: string, username: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
+  isAdmin: (user: User | null) => boolean;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -41,6 +42,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const isAdmin = (user: User | null): boolean => {
+    if (!user || !user.email) return false;
+    
+    // Check for specific admin email or @mopads.com domain
+    return user.email === "admin@mopads.com" || 
+           user.email.endsWith("@mopads.com") ||
+           user.email.endsWith("@lovable.ai");
+  };
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -100,6 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signUp,
     signOut,
     loading,
+    isAdmin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
