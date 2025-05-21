@@ -1,62 +1,12 @@
 
-import { useState, useRef, Suspense } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { XR, ARButton, Controllers, useXR } from "@react-three/xr";
-import { Text, useGLTF, Html } from "@react-three/drei";
+import { Text } from "@react-three/drei";
 
-// AR Content Component
-function ARContent() {
-  const { isPresenting } = useXR();
-  const [placedObjects, setPlacedObjects] = useState<Array<{ id: number; position: [number, number, number]; text: string }>>([]);
-  
-  const handlePlaceObject = (event: any) => {
-    if (!isPresenting) return;
-    
-    // Get hit position from the AR event
-    const position = event.intersection?.point ? 
-      [event.intersection.point.x, event.intersection.point.y, event.intersection.point.z] as [number, number, number] : 
-      [0, 0, -1] as [number, number, number];
-
-    const newObject = {
-      id: Date.now(),
-      position,
-      text: "New Phillboard"
-    };
-
-    setPlacedObjects((prev) => [...prev, newObject]);
-    toast.success("Phillboard placed successfully!");
-  };
-  
-  return (
-    <>
-      <Controllers />
-      
-      {/* Add some default phillboards */}
-      <PhillboardObject position={[0, 0, -1]} text="Tech Hub" username="NeonRider" />
-      <PhillboardObject position={[1, 0.5, -2]} text="Future Now" username="DigitalNomad" />
-      
-      {/* User placed phillboards */}
-      {placedObjects.map((obj) => (
-        <PhillboardObject 
-          key={obj.id} 
-          position={obj.position} 
-          text={obj.text} 
-          username="You"
-        />
-      ))}
-      
-      {/* Invisible plane to detect touches */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} onClick={handlePlaceObject} visible={false}>
-        <planeGeometry args={[100, 100]} />
-        <meshBasicMaterial transparent opacity={0.0} />
-      </mesh>
-    </>
-  );
-}
-
-// Phillboard Component
+// Phillboard Object Component
 function PhillboardObject({ position, text, username = "User" }: { 
   position: [number, number, number], 
   text: string, 
@@ -94,6 +44,20 @@ function PhillboardObject({ position, text, username = "User" }: {
   );
 }
 
+// AR Scene Component
+function ARScene() {
+  return (
+    <>
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} />
+      
+      {/* Default Phillboards */}
+      <PhillboardObject position={[0, 0, -1]} text="Tech Hub" username="NeonRider" />
+      <PhillboardObject position={[1, 0.5, -2]} text="Future Now" username="DigitalNomad" />
+    </>
+  );
+}
+
 // Main ARScreen Component
 export function ARScreen() {
   const [showPlacement, setShowPlacement] = useState(false);
@@ -103,36 +67,31 @@ export function ARScreen() {
     toast.info("Placement canceled");
   };
   
+  const handlePlacePhillboard = () => {
+    setShowPlacement(true);
+    toast.info("Tap where you'd like to place your phillboard");
+  };
+  
   return (
     <div className="screen relative bg-black p-0 h-full">
       <div className="absolute inset-0">
         <Canvas>
-          <Suspense fallback={null}>
-            <XR>
-              <ambientLight intensity={0.5} />
-              <pointLight position={[10, 10, 10]} />
-              <ARContent />
-            </XR>
-          </Suspense>
+          <ARScene />
         </Canvas>
         
         {/* AR Instructions Overlay */}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-sm py-2 px-4 rounded-full text-sm text-white z-10">
-          Tap on surfaces to place phillboards
+          AR view (simulated)
         </div>
         
         {/* AR Button */}
         <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10">
-          <ARButton 
+          <Button 
             className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
-            sessionInit={{
-              requiredFeatures: ['hit-test'],
-              optionalFeatures: ['dom-overlay'],
-              domOverlay: { root: document.body }
-            }}
+            onClick={handlePlacePhillboard}
           >
-            {(isPresenting) => isPresenting ? 'Exit AR' : 'Enter AR'}
-          </ARButton>
+            Place Phillboard
+          </Button>
         </div>
         
         {/* Placement UI */}

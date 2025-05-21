@@ -4,16 +4,19 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
+import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { XR, ARButton, Controllers } from "@react-three/xr";
-import { Text, Loader } from "@react-three/drei";
+import { ARButton, Interactive } from "@react-three/xr";
+import { Text } from "@react-three/drei";
 
-const ARScene = ({ pin }: { pin: MapPin | null }) => {
+// Simple 3D text component for AR
+const ARContent = ({ pin }: { pin: MapPin | null }) => {
   if (!pin) return null;
   
   return (
     <>
-      <Controllers />
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} />
       
       <group position={[0, 0, -1]}>
         <mesh scale={[0.5, 0.3, 0.05]} castShadow>
@@ -41,10 +44,6 @@ const ARScene = ({ pin }: { pin: MapPin | null }) => {
           @{pin.username}
         </Text>
       </group>
-      
-      {/* Ambient light for the scene */}
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
     </>
   );
 };
@@ -87,26 +86,18 @@ const ARView = () => {
       
       <div className="h-screen w-full">
         <Canvas>
-          <XR>
-            <ARScene pin={pin} />
-          </XR>
+          <ARContent pin={pin} />
         </Canvas>
         
         <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10">
-          <ARButton 
+          <button 
             className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
-            sessionInit={{
-              requiredFeatures: ['hit-test'],
-              optionalFeatures: ['dom-overlay'],
-              domOverlay: { root: document.body }
-            }}
+            onClick={() => toast.info("AR functionality is simulated in this preview")}
           >
-            {(isPresenting) => isPresenting ? 'Exit AR' : 'View in AR'}
-          </ARButton>
+            Enter AR (Simulated)
+          </button>
         </div>
       </div>
-      
-      <Loader />
     </div>
   );
 };
