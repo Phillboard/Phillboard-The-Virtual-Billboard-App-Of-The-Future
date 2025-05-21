@@ -73,26 +73,59 @@ const generateRandomUsername = () => {
   return `${prefix}${suffix}`;
 };
 
+// Check if points are at least minDistanceKm apart
+function arePointsFarEnough(point1: {lat: number, lng: number}, point2: {lat: number, lng: number}, minDistanceKm: number): boolean {
+  // Earth's radius in km
+  const R = 6371;
+  
+  // Convert lat/lng from degrees to radians
+  const lat1 = point1.lat * Math.PI / 180;
+  const lng1 = point1.lng * Math.PI / 180;
+  const lat2 = point2.lat * Math.PI / 180;
+  const lng2 = point2.lng * Math.PI / 180;
+  
+  // Haversine formula to calculate distance between two points on Earth
+  const dLat = lat2 - lat1;
+  const dLng = lng2 - lng1;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1) * Math.cos(lat2) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c;
+  
+  return distance >= minDistanceKm;
+}
+
 // Generate sample data for the database
 export async function generateSampleData() {
   try {
-    // Create 20 sample users with Gmail accounts
-    const sampleUsers = Array(20).fill(0).map((_, index) => {
-      const username = generateRandomUsername();
-      return {
-        email: `${username.toLowerCase()}${Math.floor(Math.random() * 1000)}@gmail.com`,
-        username,
-        password: "SamplePassword123!" // Note: In a real app, never hardcode passwords
-      };
-    });
+    console.log("Starting sample data generation");
     
-    // Create phillboards for each user
-    for (const user of sampleUsers) {
-      // Register user in auth system (this would be handled by the auth UI in a real app)
-      // In this simulation, we'll just insert directly into the phillboards table
-      
+    // First, check if we have admin credentials
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session) {
+      console.error("No active session found - user must be logged in as admin");
+      return false;
+    }
+    
+    const userEmail = sessionData.session.user.email;
+    if (!userEmail || (!userEmail.endsWith('@mopads.com') && !userEmail.endsWith('@lovable.ai'))) {
+      console.error("User is not an admin - only users with @mopads.com or @lovable.ai emails can generate sample data");
+      return false;
+    }
+    
+    const adminId = sessionData.session.user.id;
+    console.log(`Admin user ID: ${adminId}, Email: ${userEmail}`);
+    
+    // Create 20 sample "users" (we're not actually creating auth users, just phillboards with usernames)
+    const sampleUsernames = Array(20).fill(0).map(() => generateRandomUsername());
+    console.log(`Generated ${sampleUsernames.length} sample usernames`);
+    
+    // Create phillboards for each username
+    for (const username of sampleUsernames) {
       // Generate random number of phillboards (1-30) for this user
       const numPhillboards = Math.floor(Math.random() * 30) + 1;
+      console.log(`Creating ${numPhillboards} phillboards for ${username}`);
       
       const phillboards = [];
       
@@ -106,78 +139,94 @@ export async function generateSampleData() {
         // Create phillboard
         phillboards.push({
           title: generateRandomTitle(),
-          username: user.username,
+          username: username,
           lat: coords.lat,
           lng: coords.lng,
           image_type: `image-${Math.floor(Math.random() * 3) + 1}`,
-          user_id: null, // We can't set user_id without creating actual users
+          user_id: adminId, // Important: Set the currently logged-in admin as the creator
           content: null
         });
       }
       
       // Insert phillboards for this user
       if (phillboards.length > 0) {
-        const { error } = await supabase
-          .from('phillboards')
-          .insert(phillboards);
-          
-        if (error) {
-          console.error(`Error creating phillboards for ${user.username}:`, error);
-        }
-      }
-    }
-    
-    // Generate 100 phillboards for admin@mopads.com around Charleston, WV
-    // Fetch admin user
-    const { data: adminUser } = await supabase.auth
-      .getUser();
-    
-    if (adminUser?.user) {
-      const adminPhillboards = [];
-      
-      for (let i = 0; i < 100; i++) {
-        // Generate coordinates at least 0.5 miles apart (approximately 0.8 km)
-        // We'll create a random point within 30km of Charleston, then check distance
-        let coords;
-        let attempts = 0;
-        let isValid = false;
-        
-        // Try to find a valid location (not too close to other locations)
-        while (!isValid && attempts < 50) {
-          coords = getRandomCoordinates(charlestonWV.lat, charlestonWV.lng, 30);
-          
-          // In a real app, we'd check distance from all other points
-          // For this sample, we'll just use random coords and assume they're far enough
-          isValid = true;
-          attempts++;
-        }
-        
-        if (coords) {
-          adminPhillboards.push({
-            title: generateRandomTitle(),
-            username: "Mopads",
-            lat: coords.lat,
-            lng: coords.lng,
-            image_type: `image-${Math.floor(Math.random() * 3) + 1}`,
-            user_id: adminUser.user.id,
-            content: null
-          });
-        }
-      }
-      
-      // Insert admin phillboards
-      if (adminPhillboards.length > 0) {
         // Insert in smaller batches to avoid request size limits
-        const batchSize = 25;
-        for (let i = 0; i < adminPhillboards.length; i += batchSize) {
-          const batch = adminPhillboards.slice(i, i + batchSize);
+        const batchSize = 10;
+        for (let i = 0; i < phillboards.length; i += batchSize) {
+          const batch = phillboards.slice(i, i + batchSize);
           const { error } = await supabase
             .from('phillboards')
             .insert(batch);
             
           if (error) {
-            console.error(`Error creating admin phillboards batch ${i/batchSize + 1}:`, error);
+            console.error(`Error creating phillboards for ${username}:`, error);
+          } else {
+            console.log(`Successfully inserted batch ${Math.floor(i/batchSize) + 1} for ${username}`);
           }
+        }
+      }
+    }
+    
+    // Generate 100 phillboards for admin@mopads.com around Charleston, WV
+    console.log("Creating 100 phillboards around Charleston, WV");
+    
+    const adminPhillboards = [];
+    const existingLocations: {lat: number, lng: number}[] = [];
+    const minDistanceKm = 0.8; // About 0.5 miles
+    
+    let successfulPoints = 0;
+    let attempts = 0;
+    const maxAttempts = 1000; // To prevent infinite loops
+    
+    while (successfulPoints < 100 && attempts < maxAttempts) {
+      // Generate coordinates within 30km of Charleston
+      const coords = getRandomCoordinates(charlestonWV.lat, charlestonWV.lng, 30);
+      attempts++;
+      
+      // Check if this point is far enough from all existing points
+      let isFarEnough = true;
+      for (const existingLocation of existingLocations) {
+        if (!arePointsFarEnough(coords, existingLocation, minDistanceKm)) {
+          isFarEnough = false;
+          break;
+        }
+      }
+      
+      if (isFarEnough) {
+        existingLocations.push(coords);
+        adminPhillboards.push({
+          title: generateRandomTitle(),
+          username: "Mopads",
+          lat: coords.lat,
+          lng: coords.lng,
+          image_type: `image-${Math.floor(Math.random() * 3) + 1}`,
+          user_id: adminId,
+          content: null
+        });
+        successfulPoints++;
+        
+        if (successfulPoints % 10 === 0) {
+          console.log(`Generated ${successfulPoints} points around Charleston`);
+        }
+      }
+    }
+    
+    console.log(`Generated ${adminPhillboards.length} admin phillboards after ${attempts} attempts`);
+    
+    // Insert admin phillboards
+    if (adminPhillboards.length > 0) {
+      // Insert in smaller batches to avoid request size limits
+      const batchSize = 10;
+      for (let i = 0; i < adminPhillboards.length; i += batchSize) {
+        const batch = adminPhillboards.slice(i, i + batchSize);
+        const { error } = await supabase
+          .from('phillboards')
+          .insert(batch);
+          
+        if (error) {
+          console.error(`Error creating admin phillboards batch ${i/batchSize + 1}:`, error);
+        } else {
+          console.log(`Successfully inserted admin batch ${Math.floor(i/batchSize) + 1}`);
         }
       }
     }

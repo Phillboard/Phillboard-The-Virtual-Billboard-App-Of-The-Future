@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { BarChart } from "@/components/ui/barChart";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -52,18 +53,38 @@ export function StatsScreen() {
           if (!error) userCount = count || 0;
         }
         
-        // Generate placements data (for now using random values since we don't have time data)
-        // In a real app, you'd aggregate this from actual creation timestamps
-        const chartData: ChartDataItem[] = daysOfWeek.map(day => ({
+        // Calculate placements over time - group by day of week
+        // In a real app, you'd use created_at timestamps
+        const { data: timeData, error: timeError } = await supabase
+          .from('phillboards')
+          .select('created_at');
+          
+        if (timeError) throw timeError;
+        
+        // Count phillboards by day of week
+        const daysCounts = new Array(7).fill(0);
+        
+        if (timeData) {
+          timeData.forEach(item => {
+            if (item.created_at) {
+              const date = new Date(item.created_at);
+              const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+              daysCounts[dayOfWeek]++;
+            }
+          });
+        }
+        
+        const chartData: ChartDataItem[] = daysOfWeek.map((day, index) => ({
           name: day,
-          value: Math.floor(Math.random() * 10) + 1, // Random values between 1-10
+          value: daysCounts[index],
         }));
         
-        // Fetch top phillboards (assuming we track views, which we don't yet)
-        // In a real app, you'd join with a views table or use analytics data
+        // Fetch top phillboards - in a real app you'd have a views counter
+        // For now, we'll get the most recently created ones
         const { data: topData, error: topError } = await supabase
           .from('phillboards')
           .select('id, title, username')
+          .order('created_at', { ascending: false })
           .limit(3);
           
         const formattedTopData = topData ? topData.map((item, index) => ({
@@ -114,7 +135,7 @@ export function StatsScreen() {
         
         {/* Placements Chart */}
         <div className="neon-card p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-3">Placements Over Time</h2>
+          <h2 className="text-lg font-semibold mb-3">Placements By Day of Week</h2>
           <div className="h-60 w-full">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
