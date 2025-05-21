@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ export function CreatePinDialog({
 }: CreatePinDialogProps) {
   const [tagline, setTagline] = useState("");
   const [selectedImage, setSelectedImage] = useState("1");
-  const [isSubmitting, setIsSubmitting = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   
   const handleCreatePhillboard = async () => {
