@@ -4,7 +4,7 @@ import { LocationTracker } from "./map/LocationTracker";
 import { MapBackground } from "./map/MapBackground";
 import { LocationHeader } from "./map/LocationHeader";
 import { PinPopup } from "./map/PinPopup";
-import { CreatePinDialog } from "./map/CreatePinDialog";
+import { CreatePinDialog } from "./map/dialogs/CreatePinDialog";
 import { CreatePinButton } from "./map/CreatePinButton";
 import { UserLocation, MapPin } from "./map/types";
 import { useAuth } from "@/contexts/AuthContext";
