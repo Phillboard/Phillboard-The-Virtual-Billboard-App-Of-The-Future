@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,18 +7,66 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 
-// Fake data for map pins
-const mapPins = [
+// We'll keep the fake data as fallback
+const defaultMapPins = [
   { id: 1, lat: 47.5, lng: 52.2, title: "Downtown Digital", username: "CyberAlex", distance: "120 ft" },
   { id: 2, lat: 47.7, lng: 51.9, title: "Tech Hub", username: "NeonRider", distance: "250 ft" },
   { id: 3, lat: 47.2, lng: 52.4, title: "Future Now", username: "DigitalNomad", distance: "85 ft" },
 ];
+
+interface UserLocation {
+  lat: number;
+  lng: number;
+}
 
 export function MapScreen() {
   const [selectedPin, setSelectedPin] = useState<any>(null);
   const [isPlaceDialogOpen, setIsPlaceDialogOpen] = useState(false);
   const [tagline, setTagline] = useState("");
   const [selectedImage, setSelectedImage] = useState("1");
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [mapPins, setMapPins] = useState(defaultMapPins);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Get user's geolocation
+  useEffect(() => {
+    setIsLoading(true);
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser");
+      setIsLoading(false);
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        
+        // Recalculate map pins relative to the user's location
+        // For demonstration, we'll offset the default pins to be near the user's location
+        const newPins = defaultMapPins.map((pin, idx) => ({
+          ...pin,
+          lat: latitude + (idx * 0.001 - 0.001),
+          lng: longitude + (idx * 0.001 - 0.001),
+          // Calculate approximate distance in feet (very rough approximation)
+          distance: `${Math.round(idx * 100 + 50)} ft`
+        }));
+        
+        setMapPins(newPins);
+        setIsLoading(false);
+        toast.success("Location found successfully");
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setError(`Error getting your location: ${error.message}`);
+        setIsLoading(false);
+        toast.error(`Failed to get your location: ${error.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+  }, []);
   
   const handlePinSelect = (pin: any) => {
     setSelectedPin(pin);
@@ -41,6 +88,22 @@ export function MapScreen() {
       return;
     }
     
+    if (!userLocation) {
+      toast.error("Cannot place phillboard without location data");
+      return;
+    }
+    
+    // Create a new phillboard at user's current location
+    const newPin = {
+      id: mapPins.length + 1,
+      lat: userLocation.lat,
+      lng: userLocation.lng,
+      title: tagline,
+      username: "You",
+      distance: "0 ft"
+    };
+    
+    setMapPins([...mapPins, newPin]);
     toast.success("Phillboard created successfully!");
     setIsPlaceDialogOpen(false);
     setTagline("");
@@ -66,14 +129,57 @@ export function MapScreen() {
             backgroundPosition: 'center',
           }}></div>
           
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="animate-pulse text-neon-cyan flex flex-col items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin mb-2">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+                <span className="text-sm">Finding your location...</span>
+              </div>
+            </div>
+          )}
+          
+          {/* Error message */}
+          {error && !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-black/60 p-4 rounded-md text-red-400 max-w-xs text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12" y2="16" />
+                </svg>
+                {error}
+                <p className="text-xs mt-2">Using demo data instead</p>
+              </div>
+            </div>
+          )}
+          
+          {/* User location marker (blue dot) */}
+          {userLocation && (
+            <div 
+              className="absolute w-4 h-4 transform -translate-x-1/2 -translate-y-1/2 z-30"
+              style={{
+                top: '50%',
+                left: '50%',
+              }}
+            >
+              <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse">
+                <div className="absolute top-0 left-0 w-4 h-4 bg-blue-500 rounded-full opacity-75 animate-ping"></div>
+              </div>
+            </div>
+          )}
+          
           {/* Map pins */}
           {mapPins.map((pin) => (
             <button
               key={pin.id}
               className="absolute w-6 h-6 transform -translate-x-1/2 -translate-y-1/2 animate-pulse"
               style={{
-                top: `${(pin.lat / 100) * 100}%`,
-                left: `${(pin.lng / 100) * 100}%`,
+                // Position pins relative to the center (user location)
+                top: `${userLocation ? 50 + ((pin.lat - (userLocation?.lat || 0)) * 1000) : (pin.lat / 100) * 100}%`,
+                left: `${userLocation ? 50 + ((pin.lng - (userLocation?.lng || 0)) * 1000) : (pin.lng / 100) * 100}%`,
               }}
               onClick={() => handlePinSelect(pin)}
             >
@@ -84,16 +190,22 @@ export function MapScreen() {
         </div>
       </div>
       
-      {/* Top bar with mock location info */}
+      {/* Top bar with location info */}
       <div className="relative z-10 bg-black/50 backdrop-blur-sm rounded-lg p-2 mb-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neon-cyan">
             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
             <circle cx="12" cy="10" r="3"/>
           </svg>
-          <span className="text-sm">Downtown, Metro City</span>
+          <span className="text-sm">
+            {isLoading 
+              ? "Finding your location..." 
+              : userLocation 
+                ? `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}` 
+                : "Location unavailable"}
+          </span>
         </div>
-        <div className="text-neon-cyan text-sm">3 phillboards nearby</div>
+        <div className="text-neon-cyan text-sm">{mapPins.length} phillboards nearby</div>
       </div>
       
       {/* Pin popup dialog */}
