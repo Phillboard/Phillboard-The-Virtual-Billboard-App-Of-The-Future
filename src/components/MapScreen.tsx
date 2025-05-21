@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LocationTracker } from "./map/LocationTracker";
 import { MapBackground } from "./map/MapBackground";
 import { LocationHeader } from "./map/LocationHeader";
@@ -16,7 +16,20 @@ export function MapScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Add a timeout to prevent infinite loading state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isLoading) {
+        console.log("Forcing loading state to complete after timeout");
+        setIsLoading(false);
+      }
+    }, 20000); // 20 seconds timeout
+    
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+  
   const handleLocationUpdate = (location: UserLocation, pins: MapPin[]) => {
+    console.log("Location update received:", location);
     setUserLocation(location);
     setMapPins(pins);
   };
