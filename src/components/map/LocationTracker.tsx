@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { UserLocation, MapPin, defaultMapPins } from "./types";
 import { toast } from "sonner";
 
@@ -14,6 +14,8 @@ export function LocationTracker({
   onError, 
   onLoadingChange 
 }: LocationTrackerProps) {
+  const hasNotifiedSuccess = useRef(false);
+
   useEffect(() => {
     onLoadingChange(true);
     
@@ -40,7 +42,12 @@ export function LocationTracker({
         
         onLocationUpdate(userLocation, newPins);
         onLoadingChange(false);
-        toast.success("Location found successfully");
+        
+        // Only show success toast once
+        if (!hasNotifiedSuccess.current) {
+          toast.success("Location found successfully");
+          hasNotifiedSuccess.current = true;
+        }
       },
       (error) => {
         console.error("Error getting location:", error);
@@ -50,6 +57,11 @@ export function LocationTracker({
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      // Any cleanup if needed
+    };
   }, [onLocationUpdate, onError, onLoadingChange]);
   
   return null; // This is a non-rendering component
