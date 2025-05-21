@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import { UserLocation, MapPin } from "./types";
 
@@ -8,6 +8,7 @@ const containerStyle = {
   height: '100%'
 };
 
+// Dark mode map styles
 const mapOptions = {
   disableDefaultUI: true,
   zoomControl: true,
@@ -63,15 +64,26 @@ export function GoogleMapComponent({
     googleMapsApiKey: "AIzaSyDefMsHgR_YU6ojIZWpsqketVLP9yDwyu8"
   });
 
-  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   
+  // Only set the map once on initial load to prevent re-renders
   const onLoad = useCallback((map: google.maps.Map) => {
-    setMap(map);
+    mapRef.current = map;
+    setMapReady(true);
   }, []);
 
   const onUnmount = useCallback(() => {
-    setMap(null);
+    mapRef.current = null;
+    setMapReady(false);
   }, []);
+
+  // Update map center when user location changes without re-rendering the entire map
+  useEffect(() => {
+    if (mapReady && mapRef.current && userLocation) {
+      mapRef.current.panTo({ lat: userLocation.lat, lng: userLocation.lng });
+    }
+  }, [userLocation, mapReady]);
 
   if (!isLoaded || isLoading) {
     return (
@@ -86,11 +98,14 @@ export function GoogleMapComponent({
     );
   }
 
+  // Default center if user location is not available
+  const defaultCenter = { lat: 37.7749, lng: -122.4194 };
+  
   return (
     <div className="absolute inset-0">
       <GoogleMap
         mapContainerStyle={containerStyle}
-        center={userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : { lat: 37.7749, lng: -122.4194 }}
+        center={userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : defaultCenter}
         zoom={15}
         onLoad={onLoad}
         onUnmount={onUnmount}

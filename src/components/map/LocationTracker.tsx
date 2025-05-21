@@ -15,6 +15,7 @@ export function LocationTracker({
   onLoadingChange 
 }: LocationTrackerProps) {
   const hasNotifiedSuccess = useRef(false);
+  const watchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     onLoadingChange(true);
@@ -25,18 +26,18 @@ export function LocationTracker({
       toast.error("Geolocation is not supported by your browser");
       return;
     }
-    
+
+    // Get initial position
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         const userLocation = { lat: latitude, lng: longitude };
         
-        // Recalculate map pins relative to the user's location
+        // Generate map pins around user's location
         const newPins = defaultMapPins.map((pin, idx) => ({
           ...pin,
           lat: latitude + (idx * 0.001 - 0.001),
           lng: longitude + (idx * 0.001 - 0.001),
-          // Calculate approximate distance in feet (very rough approximation)
           distance: `${Math.round(idx * 100 + 50)} ft`
         }));
         
@@ -58,9 +59,13 @@ export function LocationTracker({
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
     
-    // Cleanup function to prevent memory leaks
+    // Don't use watchPosition to reduce potential for map glitching
+    // We'll only get the position once instead of continuously updating
+    
     return () => {
-      // Any cleanup if needed
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
     };
   }, [onLocationUpdate, onError, onLoadingChange]);
   
