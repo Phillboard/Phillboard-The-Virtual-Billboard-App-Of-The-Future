@@ -1,7 +1,8 @@
 
 import { useState, useEffect, useRef } from "react";
-import { UserLocation, MapPin, defaultMapPins } from "./types";
+import { UserLocation, MapPin } from "./types";
 import { toast } from "sonner";
+import { fetchNearbyPhillboards } from "@/services/phillboardService";
 
 interface LocationTrackerProps {
   onLocationUpdate: (location: UserLocation, pins: MapPin[]) => void;
@@ -15,7 +16,6 @@ export function LocationTracker({
   onLoadingChange 
 }: LocationTrackerProps) {
   const hasNotifiedSuccess = useRef(false);
-  const watchIdRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -45,18 +45,13 @@ export function LocationTracker({
     }
     
     return () => {
-      // Clean up any watchers and timeouts
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
-      
       if (timeoutRef.current !== null) {
         clearTimeout(timeoutRef.current);
       }
     };
   }, []);
   
-  const handlePositionSuccess = (position: GeolocationPosition) => {
+  const handlePositionSuccess = async (position: GeolocationPosition) => {
     // Clear the timeout since we got a successful position
     if (timeoutRef.current !== null) {
       clearTimeout(timeoutRef.current);
@@ -68,21 +63,30 @@ export function LocationTracker({
     
     const userLocation = { lat: latitude, lng: longitude };
     
-    // Generate map pins around user's location
-    const newPins = defaultMapPins.map((pin, idx) => ({
-      ...pin,
-      lat: latitude + (idx * 0.001 - 0.001),
-      lng: longitude + (idx * 0.001 - 0.001),
-      distance: `${Math.round(idx * 100 + 50)} ft`
-    }));
-    
-    onLocationUpdate(userLocation, newPins);
-    onLoadingChange(false);
-    
-    // Only show success toast once
-    if (!hasNotifiedSuccess.current) {
-      toast.success("Location found successfully");
-      hasNotifiedSuccess.current = true;
+    try {
+      // Fetch real phillboards from database
+      const phillboards = await fetchNearbyPhillboards(userLocation);
+      onLocationUpdate(userLocation, phillboards);
+      onLoadingChange(false);
+      
+      // Only show success toast once
+      if (!hasNotifiedSuccess.current) {
+        toast.success("Location found successfully");
+        hasNotifiedSuccess.current = true;
+      }
+    } catch (error) {
+      console.error("Error fetching phillboards:", error);
+      
+      // Fallback to default pins if database fetch fails
+      const defaultPins = createDefaultPins(latitude, longitude);
+      onLocationUpdate(userLocation, defaultPins);
+      onLoadingChange(false);
+      
+      toast.error("Failed to load phillboards from database");
+      
+      if (!hasNotifiedSuccess.current) {
+        hasNotifiedSuccess.current = true;
+      }
     }
   };
   
@@ -101,7 +105,7 @@ export function LocationTracker({
     provideFallbackLocation();
   };
   
-  const provideFallbackLocation = () => {
+  const provideFallbackLocation = async () => {
     if (hasNotifiedSuccess.current) return; // Don't override if we already have a location
     
     console.log("Providing fallback location data");
@@ -111,19 +115,50 @@ export function LocationTracker({
     
     const userLocation = { lat: fallbackLat, lng: fallbackLng };
     
-    // Generate map pins around fallback location
-    const newPins = defaultMapPins.map((pin, idx) => ({
-      ...pin,
-      lat: fallbackLat + (idx * 0.001 - 0.001),
-      lng: fallbackLng + (idx * 0.001 - 0.001),
-      distance: `${Math.round(idx * 100 + 50)} ft`
-    }));
+    try {
+      // Try to fetch real phillboards even with fallback location
+      const phillboards = await fetchNearbyPhillboards(userLocation);
+      onLocationUpdate(userLocation, phillboards);
+    } catch (error) {
+      console.error("Error fetching phillboards with fallback location:", error);
+      
+      // Use default pins as last resort
+      const defaultPins = createDefaultPins(fallbackLat, fallbackLng);
+      onLocationUpdate(userLocation, defaultPins);
+    }
     
-    onLocationUpdate(userLocation, newPins);
     onLoadingChange(false);
-    
     toast.info("Using demo location instead");
     hasNotifiedSuccess.current = true;
+  };
+  
+  const createDefaultPins = (centerLat: number, centerLng: number): MapPin[] => {
+    return [
+      {
+        id: "default-1",
+        lat: centerLat + 0.001,
+        lng: centerLng - 0.001,
+        title: "Downtown Digital",
+        username: "CyberAlex",
+        distance: "350 ft"
+      },
+      {
+        id: "default-2",
+        lat: centerLat - 0.0005,
+        lng: centerLng + 0.001,
+        title: "Tech Hub",
+        username: "NeonRider",
+        distance: "520 ft"
+      },
+      {
+        id: "default-3",
+        lat: centerLat + 0.0008,
+        lng: centerLng + 0.0005,
+        title: "Future Now",
+        username: "DigitalNomad",
+        distance: "280 ft"
+      }
+    ];
   };
   
   return null; // This is a non-rendering component

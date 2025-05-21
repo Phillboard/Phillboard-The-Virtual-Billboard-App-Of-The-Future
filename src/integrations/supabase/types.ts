@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      phillboards: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          image_type: string | null
+          lat: number
+          lng: number
+          title: string
+          user_id: string | null
+          username: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_type?: string | null
+          lat: number
+          lng: number
+          title: string
+          user_id?: string | null
+          username: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_type?: string | null
+          lat?: number
+          lng?: number
+          title?: string
+          user_id?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

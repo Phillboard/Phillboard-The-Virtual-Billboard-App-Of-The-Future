@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { UserLocation, MapPin } from "./types";
 import { toast } from "sonner";
+import { createPhillboard } from "@/services/phillboardService";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CreatePinDialogProps {
   isOpen: boolean;
@@ -23,8 +24,10 @@ export function CreatePinDialog({
 }: CreatePinDialogProps) {
   const [tagline, setTagline] = useState("");
   const [selectedImage, setSelectedImage] = useState("1");
+  const [isSubmitting, setIsSubmitting = useState(false);
+  const { user } = useAuth();
   
-  const handleCreatePhillboard = () => {
+  const handleCreatePhillboard = async () => {
     if (!tagline) {
       toast.error("Please enter a tagline for your phillboard");
       return;
@@ -34,20 +37,62 @@ export function CreatePinDialog({
       toast.error("Cannot place phillboard without location data");
       return;
     }
+
+    setIsSubmitting(true);
     
-    // Create a new phillboard at user's current location
-    const newPin = {
-      id: Date.now(), // Use timestamp for unique ID
-      lat: userLocation.lat,
-      lng: userLocation.lng,
-      title: tagline,
-      username: "You",
-      distance: "0 ft"
-    };
-    
-    onCreatePin(newPin);
-    toast.success("Phillboard created successfully!");
-    handleCloseDialog();
+    try {
+      // Create the phillboard in the database
+      const newPhillboardData = {
+        title: tagline,
+        username: user?.email?.split('@')[0] || "Anonymous",
+        lat: userLocation.lat,
+        lng: userLocation.lng,
+        image_type: `image-${selectedImage}`,
+        content: null
+      };
+      
+      const newPhillboard = await createPhillboard(newPhillboardData);
+      
+      // If the creation was successful, add the new pin to the map
+      if (newPhillboard) {
+        // Create the visual pin for the map with distance calculation
+        const mapPin: MapPin = {
+          id: newPhillboard.id,
+          lat: newPhillboard.lat,
+          lng: newPhillboard.lng,
+          title: newPhillboard.title,
+          username: newPhillboard.username,
+          distance: "0 ft", // It's at the user's location
+          image_type: newPhillboard.image_type,
+          content: newPhillboard.content
+        };
+        
+        onCreatePin(mapPin);
+        toast.success("Phillboard created successfully!");
+      } else {
+        toast.error("Failed to create phillboard");
+      }
+    } catch (error) {
+      console.error("Error creating phillboard:", error);
+      toast.error("Failed to create phillboard. Please try again.");
+      
+      // Fallback to client-side creation if database insertion fails
+      const fallbackPin: MapPin = {
+        id: Date.now(),
+        lat: userLocation.lat,
+        lng: userLocation.lng,
+        title: tagline,
+        username: user?.email?.split('@')[0] || "Anonymous",
+        distance: "0 ft",
+        image_type: `image-${selectedImage}`,
+      };
+      
+      onCreatePin(fallbackPin);
+      toast.info("Created phillboard locally (offline mode)");
+    } finally {
+      setIsSubmitting(false);
+      handleCloseDialog();
+    }
   };
   
   const handleCloseDialog = () => {
@@ -146,14 +191,24 @@ export function CreatePinDialog({
             variant="outline"
             onClick={handleCloseDialog}
             className="bg-transparent border-white/20 hover:bg-white/10"
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button 
             onClick={handleCreatePhillboard}
             className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan"
+            disabled={isSubmitting}
           >
-            Post Phillboard
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Posting...
+              </>
+            ) : "Post Phillboard"}
           </Button>
         </DialogFooter>
       </DialogContent>

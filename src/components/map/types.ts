@@ -4,12 +4,14 @@ export interface UserLocation {
 }
 
 export interface MapPin {
-  id: number;
+  id: number | string;
   lat: number;
   lng: number;
   title: string;
   username: string;
   distance: string;
+  image_type?: string;
+  content?: string | null;
 }
 
 // We'll keep the fake data as fallback
