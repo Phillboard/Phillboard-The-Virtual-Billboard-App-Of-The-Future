@@ -1,7 +1,6 @@
 
-import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { AuthCard } from "@/components/AuthForms";
+import { AuthCard } from "@/components/auth";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
