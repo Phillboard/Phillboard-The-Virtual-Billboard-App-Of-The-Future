@@ -1,5 +1,5 @@
 
-import { BarChart } from "@/components/ui/chart";
+import { BarChart } from "@/components/ui/barChart";
 import { Separator } from "@/components/ui/separator";
 
 // Fake data for statistics
