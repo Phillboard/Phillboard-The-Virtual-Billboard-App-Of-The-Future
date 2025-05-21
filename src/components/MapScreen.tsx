@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { LocationTracker } from "./map/LocationTracker";
 import { MapBackground } from "./map/MapBackground";
@@ -6,6 +5,7 @@ import { LocationHeader } from "./map/LocationHeader";
 import { PinPopup } from "./map/PinPopup";
 import { CreatePinDialog } from "./map/dialogs/CreatePinDialog";
 import { CreatePinButton } from "./map/CreatePinButton";
+import { AdminModeToggle } from "./map/AdminModeToggle";
 import { UserLocation, MapPin } from "./map/types";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -87,21 +87,12 @@ export function MapScreen() {
         pinsCount={mapPins.length}
       />
 
-      {/* Admin mode toggle button - only visible for admins */}
-      {isAdmin && (
-        <div className="absolute top-16 right-4 z-10">
-          <button 
-            onClick={toggleAdminMode}
-            className={`px-3 py-1 rounded-full text-xs font-medium ${
-              isAdminMode 
-                ? "bg-red-500 text-white" 
-                : "bg-gray-700 text-gray-300"
-            }`}
-          >
-            {isAdminMode ? "Admin Mode: ON" : "Admin Mode: OFF"}
-          </button>
-        </div>
-      )}
+      {/* Admin mode toggle button - extracted to its own component */}
+      <AdminModeToggle
+        isAdminMode={isAdminMode}
+        isAdmin={isAdmin}
+        onToggle={toggleAdminMode}
+      />
       
       {/* Pin popup dialog */}
       <PinPopup
