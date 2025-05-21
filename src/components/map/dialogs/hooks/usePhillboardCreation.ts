@@ -35,7 +35,8 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
         lat: locationToUse.lat,
         lng: locationToUse.lng,
         image_type: `image-${selectedImage}`,
-        content: null
+        content: null,
+        user_id: user?.id // Explicitly set user_id so RLS policies can be applied correctly
       };
       
       const newPhillboard = await createPhillboard(newPhillboardData);
@@ -57,7 +58,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
         onCreatePin(mapPin);
         toast.success("Phillboard created successfully!");
       } else {
-        toast.error("Failed to create phillboard");
+        throw new Error("Failed to create phillboard - no data returned");
       }
     } catch (error) {
       console.error("Error creating phillboard:", error);

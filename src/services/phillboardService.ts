@@ -29,6 +29,8 @@ function formatDistance(distanceInMeters: number): string {
 // Fetch phillboards near a location
 export async function fetchNearbyPhillboards(userLocation: UserLocation): Promise<MapPin[]> {
   try {
+    console.log("Fetching phillboards from database...");
+    
     // Fetch all phillboards from the database
     // In a real-world app with many entries, we would add pagination and filtering
     const { data, error } = await supabase
@@ -44,6 +46,8 @@ export async function fetchNearbyPhillboards(userLocation: UserLocation): Promis
       console.log("No phillboards found in database");
       return [];
     }
+    
+    console.log(`Found ${data.length} phillboards in database`);
     
     // Calculate distance for each phillboard
     const pinsWithDistance = data.map(pin => {
@@ -80,8 +84,10 @@ export async function fetchNearbyPhillboards(userLocation: UserLocation): Promis
 }
 
 // Create a new phillboard
-export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance'>) {
+export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance'> & { user_id?: string }) {
   try {
+    console.log("Creating new phillboard:", phillboard);
+    
     const { data, error } = await supabase
       .from('phillboards')
       .insert([
@@ -91,7 +97,8 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
           lat: phillboard.lat,
           lng: phillboard.lng,
           image_type: phillboard.image_type || 'text',
-          content: phillboard.content || null
+          content: phillboard.content || null,
+          user_id: phillboard.user_id // Important for RLS policies
         }
       ])
       .select();
@@ -101,7 +108,13 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
       throw error;
     }
     
-    return data?.[0];
+    if (!data || data.length === 0) {
+      console.error("No data returned from phillboard creation");
+      throw new Error("Failed to create phillboard");
+    }
+    
+    console.log("Created phillboard successfully:", data[0]);
+    return data[0];
   } catch (err) {
     console.error("Failed to create phillboard:", err);
     throw err;

@@ -140,7 +140,8 @@ export function LocationTracker({
         lng: centerLng - 0.001,
         title: "Downtown Digital",
         username: "CyberAlex",
-        distance: "350 ft"
+        distance: "350 ft",
+        image_type: "image-1"
       },
       {
         id: "default-2",
@@ -148,7 +149,8 @@ export function LocationTracker({
         lng: centerLng + 0.001,
         title: "Tech Hub",
         username: "NeonRider",
-        distance: "520 ft"
+        distance: "520 ft",
+        image_type: "image-2"
       },
       {
         id: "default-3",
@@ -156,7 +158,8 @@ export function LocationTracker({
         lng: centerLng + 0.0005,
         title: "Future Now",
         username: "DigitalNomad",
-        distance: "280 ft"
+        distance: "280 ft",
+        image_type: "image-3"
       }
     ];
   };
