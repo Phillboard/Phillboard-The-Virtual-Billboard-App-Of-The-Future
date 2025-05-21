@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { BarChart } from "@/components/ui/barChart";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,7 +12,7 @@ interface ChartDataItem {
 
 // Top phillboard structure
 interface TopPhillboard {
-  id: number;
+  id: string; // Changed from number to string to match Supabase's UUID type
   title: string;
   username: string;
   views: number;
