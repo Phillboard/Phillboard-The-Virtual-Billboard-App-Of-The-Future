@@ -28,7 +28,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
         </div>
         <h1 className="text-3xl font-bold tracking-tighter mb-2">
           <span className="text-neon-cyan">Phill</span>
-          <span className="text-neon-magenta">boards</span>
+          <span className="text-neon-magenta">Board</span>
         </h1>
         <p className="text-sm text-gray-400">Tag the world around you</p>
       </div>
