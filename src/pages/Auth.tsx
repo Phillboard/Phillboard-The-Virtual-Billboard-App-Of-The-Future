@@ -14,7 +14,7 @@ const Auth = () => {
   
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black via-gray-900 to-black">
-      <AuthCard onAuth={() => {}} /> {/* onAuth prop is handled internally now */}
+      <AuthCard />
     </div>
   );
 };
