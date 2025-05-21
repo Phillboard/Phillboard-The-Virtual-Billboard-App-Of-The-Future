@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin } from "./types";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface PinPopupProps {
   selectedPin: MapPin | null;
@@ -10,10 +11,13 @@ interface PinPopupProps {
 }
 
 export function PinPopup({ selectedPin, onClose }: PinPopupProps) {
+  const navigate = useNavigate();
+  
   if (!selectedPin) return null;
   
   const handleViewInAR = () => {
     toast.success(`Launching AR view for "${selectedPin.title}"`);
+    navigate('/ar-view', { state: { pin: selectedPin } });
     onClose();
   };
   
