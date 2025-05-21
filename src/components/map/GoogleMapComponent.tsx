@@ -150,49 +150,51 @@ export function GoogleMapComponent({
   // If we hit the timeout but Google Maps loaded, continue with the map
   return (
     <div className="absolute inset-0">
-      {isLoaded && (
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : defaultCenter}
-          zoom={15}
-          onLoad={onLoad}
-          onUnmount={onUnmount}
-          options={mapOptions}
-          onClick={handleMapClick}
-          className={isAdminMode ? "cursor-crosshair" : ""}
-        >
-          {userLocation && (
-            <Marker
-              position={{ lat: userLocation.lat, lng: userLocation.lng }}
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 8,
-                fillColor: "#4285F4",
-                fillOpacity: 1,
-                strokeColor: "#ffffff",
-                strokeWeight: 2,
-              }}
-            />
-          )}
-          
-          {mapPins.map((pin) => (
-            <Marker
-              key={pin.id}
-              position={{ lat: pin.lat, lng: pin.lng }}
-              title={pin.title}
-              onClick={() => onPinSelect(pin)}
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 6,
-                fillColor: "#00FFFF",
-                fillOpacity: 0.8,
-                strokeColor: "#ffffff",
-                strokeWeight: 1,
-              }}
-            />
-          ))}
-        </GoogleMap>
-      )}
+      {/* Wrap the GoogleMap in a div with the cursor style for admin mode */}
+      <div className={isAdminMode ? "cursor-crosshair w-full h-full" : "w-full h-full"}>
+        {isLoaded && (
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : defaultCenter}
+            zoom={15}
+            onLoad={onLoad}
+            onUnmount={onUnmount}
+            options={mapOptions}
+            onClick={handleMapClick}
+          >
+            {userLocation && (
+              <Marker
+                position={{ lat: userLocation.lat, lng: userLocation.lng }}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 8,
+                  fillColor: "#4285F4",
+                  fillOpacity: 1,
+                  strokeColor: "#ffffff",
+                  strokeWeight: 2,
+                }}
+              />
+            )}
+            
+            {mapPins.map((pin) => (
+              <Marker
+                key={pin.id}
+                position={{ lat: pin.lat, lng: pin.lng }}
+                title={pin.title}
+                onClick={() => onPinSelect(pin)}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 6,
+                  fillColor: "#00FFFF",
+                  fillOpacity: 0.8,
+                  strokeColor: "#ffffff",
+                  strokeWeight: 1,
+                }}
+              />
+            ))}
+          </GoogleMap>
+        )}
+      </div>
       
       {/* Overlay gradient */}
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent to-background/20 rounded-lg" />
