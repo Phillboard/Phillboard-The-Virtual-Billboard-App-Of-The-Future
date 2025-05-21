@@ -11,9 +11,9 @@ const globalData = {
     { id: 3, title: "Future Now", username: "DigitalNomad", views: 187 },
   ],
   activity: [
-    { id: 1, username: "Alice", action: "placed a philboard", location: "50 ft away", time: "2 min ago" },
-    { id: 2, username: "Bob", action: "viewed your philboard", location: "Downtown", time: "10 min ago" },
-    { id: 3, username: "Charlie", action: "placed a philboard", location: "near Coffee Shop", time: "25 min ago" },
+    { id: 1, username: "Alice", action: "placed a phillboard", location: "50 ft away", time: "2 min ago" },
+    { id: 2, username: "Bob", action: "viewed your phillboard", location: "Downtown", time: "10 min ago" },
+    { id: 3, username: "Charlie", action: "placed a phillboard", location: "near Coffee Shop", time: "25 min ago" },
   ],
 };
 
@@ -39,13 +39,13 @@ export function StatsScreen() {
           <h2 className="text-lg font-semibold mb-3">Global Stats</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-400">Total Philboards</p>
+              <p className="text-sm text-gray-400">Total Phillboards</p>
               <p className="text-2xl font-bold text-neon-cyan">
                 {globalData.total.toLocaleString()}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-400">Your Philboards</p>
+              <p className="text-sm text-gray-400">Your Phillboards</p>
               <p className="text-2xl font-bold text-neon-magenta">
                 {globalData.personal}
               </p>
@@ -68,9 +68,9 @@ export function StatsScreen() {
           </div>
         </div>
         
-        {/* Popular Philboards */}
+        {/* Popular Phillboards */}
         <div className="neon-card p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-3">Top Philboards</h2>
+          <h2 className="text-lg font-semibold mb-3">Top Phillboards</h2>
           <div className="space-y-3">
             {globalData.popular.map((item, index) => (
               <div key={item.id} className="flex items-center justify-between">
