@@ -5,13 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
-export function LoginForm({ onLogin }: { onLogin: () => void }) {
+export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
@@ -21,12 +23,13 @@ export function LoginForm({ onLogin }: { onLogin: () => void }) {
     
     setIsLoading(true);
     
-    // Mock login for demo
-    setTimeout(() => {
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      // Error is handled in the signIn function
+    } finally {
       setIsLoading(false);
-      toast.success("Login successful!");
-      onLogin();
-    }, 1500);
+    }
   };
   
   return (
@@ -78,8 +81,7 @@ export function LoginForm({ onLogin }: { onLogin: () => void }) {
         variant="outline"
         className="w-full bg-black/40 border-white/20 hover:bg-white/10"
         onClick={() => {
-          toast.success("Google login would happen here");
-          onLogin();
+          toast.info("Google login is not set up yet");
         }}
       >
         <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -106,16 +108,18 @@ export function LoginForm({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-export function SignupForm({ onSignup }: { onSignup: () => void }) {
+export function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || !username) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -127,16 +131,28 @@ export function SignupForm({ onSignup }: { onSignup: () => void }) {
     
     setIsLoading(true);
     
-    // Mock signup for demo
-    setTimeout(() => {
+    try {
+      await signUp(email, password, username);
+    } catch (error) {
+      // Error is handled in the signUp function
+    } finally {
       setIsLoading(false);
-      toast.success("Account created successfully!");
-      onSignup();
-    }, 1500);
+    }
   };
   
   return (
     <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
+      <div className="space-y-2">
+        <Label htmlFor="username">Username</Label>
+        <Input 
+          id="username" 
+          type="text" 
+          placeholder="cooluser"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="bg-black/40 border-white/20"
+        />
+      </div>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input 
@@ -192,8 +208,7 @@ export function SignupForm({ onSignup }: { onSignup: () => void }) {
         variant="outline"
         className="w-full bg-black/40 border-white/20 hover:bg-white/10"
         onClick={() => {
-          toast.success("Google signup would happen here");
-          onSignup();
+          toast.info("Google signup is not set up yet");
         }}
       >
         <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -220,7 +235,7 @@ export function SignupForm({ onSignup }: { onSignup: () => void }) {
   );
 }
 
-export function AuthCard({ onAuth }: { onAuth: () => void }) {
+export function AuthCard() {
   const [isLogin, setIsLogin] = useState(true);
   
   return (
@@ -237,8 +252,8 @@ export function AuthCard({ onAuth }: { onAuth: () => void }) {
       </CardHeader>
       <CardContent>
         {isLogin 
-          ? <LoginForm onLogin={onAuth} /> 
-          : <SignupForm onSignup={onAuth} />
+          ? <LoginForm /> 
+          : <SignupForm />
         }
       </CardContent>
       <CardFooter className="flex justify-center">

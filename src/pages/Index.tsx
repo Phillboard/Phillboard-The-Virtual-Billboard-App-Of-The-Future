@@ -1,23 +1,21 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SplashScreen } from "@/components/SplashScreen";
-import { AuthCard } from "@/components/AuthForms";
 import { PermissionsPrompt } from "@/components/PermissionsPrompt";
 import { Navigation } from "@/components/Navigation";
 import { MapScreen } from "@/components/MapScreen";
 import { ARScreen } from "@/components/ARScreen";
 import { StatsScreen } from "@/components/StatsScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const Index = () => {
-  const [appState, setAppState] = useState<"splash" | "auth" | "permissions" | "main">("splash");
+  const [appState, setAppState] = useState<"splash" | "permissions" | "main">("splash");
   const [activeTab, setActiveTab] = useState<string>("map");
+  const { user, loading } = useAuth();
   
   const handleSplashComplete = () => {
-    setAppState("auth");
-  };
-  
-  const handleAuthComplete = () => {
     setAppState("permissions");
   };
   
@@ -25,16 +23,20 @@ const Index = () => {
     setAppState("main");
   };
   
+  // If still loading auth state, show splash screen
+  if (loading) {
+    return <SplashScreen onComplete={() => {}} />;
+  }
+  
+  // If not authenticated, redirect to auth page
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {appState === "splash" && (
         <SplashScreen onComplete={handleSplashComplete} />
-      )}
-      
-      {appState === "auth" && (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black via-gray-900 to-black">
-          <AuthCard onAuth={handleAuthComplete} />
-        </div>
       )}
       
       {appState === "permissions" && (
