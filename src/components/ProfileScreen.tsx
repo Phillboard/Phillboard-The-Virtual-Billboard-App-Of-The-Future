@@ -6,6 +6,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
+import { Shield } from "lucide-react";
 
 // Fake user data
 const userData = {
@@ -120,6 +122,16 @@ export function ProfileScreen() {
             >
               Logout
             </Button>
+            
+            <Link to="/admin" className="block mt-4">
+              <Button 
+                variant="outline"
+                className="w-full bg-transparent border-white/20 hover:bg-white/10 text-neon-cyan"
+              >
+                <Shield className="mr-2 h-4 w-4" />
+                Admin Panel
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

@@ -61,21 +61,27 @@ export function BarChart({
           tick={{ fontSize: 12 }}
           stroke="rgba(255,255,255,0.4)"
         />
-        <ChartTooltip
+        <Tooltip
           content={({ active, payload }) => {
             if (active && payload && payload.length) {
               return (
-                <ChartTooltipContent
-                  className="bg-black/80 border-gray-800"
-                  items={payload.map((entry) => ({
-                    label: entry.dataKey as string,
-                    value: valueFormatter(entry.value as number),
-                    color: entry.color as string,
-                  }))}
-                />
-              )
+                <div className="bg-black/80 border border-gray-800 px-3 py-2 rounded-md shadow-md">
+                  {payload.map((entry, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: entry.color }}
+                      />
+                      <span className="text-sm">{entry.dataKey as string}:</span>
+                      <span className="text-sm font-medium">
+                        {valueFormatter(entry.value as number)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              );
             }
-            return null
+            return null;
           }}
         />
         {categories.map((category, i) => (
