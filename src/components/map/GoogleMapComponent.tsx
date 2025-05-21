@@ -52,13 +52,17 @@ interface GoogleMapComponentProps {
   mapPins: MapPin[];
   onPinSelect: (pin: MapPin) => void;
   isLoading: boolean;
+  onMapClick?: (location: UserLocation) => void;
+  isAdminMode?: boolean;
 }
 
 export function GoogleMapComponent({ 
   userLocation, 
   mapPins, 
   onPinSelect,
-  isLoading 
+  isLoading,
+  onMapClick,
+  isAdminMode = false
 }: GoogleMapComponentProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -102,6 +106,17 @@ export function GoogleMapComponent({
     }
   }, [userLocation, mapReady]);
 
+  // Handle map click for admin mode
+  const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
+    if (isAdminMode && onMapClick && e.latLng) {
+      const clickedLocation = {
+        lat: e.latLng.lat(),
+        lng: e.latLng.lng()
+      };
+      onMapClick(clickedLocation);
+    }
+  }, [isAdminMode, onMapClick]);
+
   // Handle map loading error or timeout
   if (loadError) {
     console.error("Error loading Google Maps API:", loadError);
@@ -143,6 +158,8 @@ export function GoogleMapComponent({
           onLoad={onLoad}
           onUnmount={onUnmount}
           options={mapOptions}
+          onClick={handleMapClick}
+          className={isAdminMode ? "cursor-crosshair" : ""}
         >
           {userLocation && (
             <Marker

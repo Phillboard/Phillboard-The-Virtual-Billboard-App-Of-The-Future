@@ -15,18 +15,25 @@ interface CreatePinDialogProps {
   onOpenChange: (open: boolean) => void;
   userLocation: UserLocation | null;
   onCreatePin: (pin: MapPin) => void;
+  isAdminMode?: boolean;
+  selectedLocation?: UserLocation | null;
 }
 
 export function CreatePinDialog({ 
   isOpen, 
   onOpenChange, 
   userLocation, 
-  onCreatePin 
+  onCreatePin,
+  isAdminMode = false,
+  selectedLocation = null
 }: CreatePinDialogProps) {
   const [tagline, setTagline] = useState("");
   const [selectedImage, setSelectedImage] = useState("1");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
+  
+  const locationToUse = selectedLocation || userLocation;
+  const isCustomLocation = !!selectedLocation;
   
   const handleCreatePhillboard = async () => {
     if (!tagline) {
@@ -34,7 +41,7 @@ export function CreatePinDialog({
       return;
     }
     
-    if (!userLocation) {
+    if (!locationToUse) {
       toast.error("Cannot place phillboard without location data");
       return;
     }
@@ -46,8 +53,8 @@ export function CreatePinDialog({
       const newPhillboardData = {
         title: tagline,
         username: user?.email?.split('@')[0] || "Anonymous",
-        lat: userLocation.lat,
-        lng: userLocation.lng,
+        lat: locationToUse.lat,
+        lng: locationToUse.lng,
         image_type: `image-${selectedImage}`,
         content: null
       };
@@ -80,8 +87,8 @@ export function CreatePinDialog({
       // Fallback to client-side creation if database insertion fails
       const fallbackPin: MapPin = {
         id: Date.now(),
-        lat: userLocation.lat,
-        lng: userLocation.lng,
+        lat: locationToUse.lat,
+        lng: locationToUse.lng,
         title: tagline,
         username: user?.email?.split('@')[0] || "Anonymous",
         distance: "0 ft",
@@ -108,9 +115,19 @@ export function CreatePinDialog({
         <DialogHeader>
           <DialogTitle>Place a Phillboard</DialogTitle>
           <DialogDescription>
-            Create a new phillboard at your current location
+            {isCustomLocation && isAdminMode 
+              ? "Place a phillboard at the selected location (Admin Mode)" 
+              : "Create a new phillboard at your current location"}
           </DialogDescription>
         </DialogHeader>
+        
+        {isCustomLocation && isAdminMode && (
+          <div className="bg-black/40 border border-neon-cyan/30 rounded-md p-2 text-xs">
+            <p className="font-medium text-neon-cyan mb-1">Admin Mode: Custom Location</p>
+            <p>Lat: {locationToUse?.lat.toFixed(6)}</p>
+            <p>Lng: {locationToUse?.lng.toFixed(6)}</p>
+          </div>
+        )}
         
         <div className="space-y-4 py-4">
           <div className="space-y-2">

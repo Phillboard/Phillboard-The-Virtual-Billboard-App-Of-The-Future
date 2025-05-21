@@ -9,6 +9,8 @@ interface MapBackgroundProps {
   userLocation: UserLocation | null;
   mapPins: MapPin[];
   onPinSelect: (pin: MapPin) => void;
+  onMapClick?: (location: UserLocation) => void;
+  isAdminMode?: boolean;
   children?: ReactNode;
 }
 
@@ -18,6 +20,8 @@ export function MapBackground({
   userLocation, 
   mapPins, 
   onPinSelect,
+  onMapClick,
+  isAdminMode = false,
   children 
 }: MapBackgroundProps) {
   return (
@@ -29,6 +33,8 @@ export function MapBackground({
           mapPins={mapPins}
           onPinSelect={onPinSelect}
           isLoading={isLoading}
+          onMapClick={onMapClick}
+          isAdminMode={isAdminMode}
         />
         
         {/* Error message */}
