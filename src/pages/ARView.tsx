@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
@@ -13,10 +14,10 @@ import BackButton from "@/components/ar/BackButton";
 
 // Create XR state store for the XR component
 const xrState = createXRStore({
-  // Set required features at the top level
+  // Set required features
   requiredFeatures: ['hit-test', 'dom-overlay'],
-  // For domOverlay, we need to provide it in the right format
-  domOverlay: { rootElement: document.body }
+  // For domOverlay, specify the root DOM element
+  domOverlay: { root: document.body }
 });
 
 /**
