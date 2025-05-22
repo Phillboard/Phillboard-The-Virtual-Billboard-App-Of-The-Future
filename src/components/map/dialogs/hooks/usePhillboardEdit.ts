@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { MapPin } from "../../types";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ export function usePhillboardEdit({
     phillboard.image_type?.split("-")[1] || "1"
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editCost, setEditCost] = useState<number | null>(null);
   const { user } = useAuth();
 
   // Function to map selected image to placement type
@@ -30,6 +31,34 @@ export function usePhillboardEdit({
       default: return "human";
     }
   };
+  
+  // Calculate the cost of editing this phillboard
+  useEffect(() => {
+    const calculateEditCost = async () => {
+      if (!user) return;
+      
+      try {
+        // Get the edit count for this phillboard (each edit doubles the cost)
+        const { data: editHistory, error } = await supabase
+          .from("phillboards")
+          .select("created_at")
+          .eq("id", phillboard.id)
+          .order("created_at", { ascending: false });
+          
+        if (error) throw error;
+        
+        // Base cost is $1, double for each previous edit
+        const editCount = editHistory ? editHistory.length : 0;
+        const cost = Math.pow(2, editCount);
+        setEditCost(cost);
+      } catch (err) {
+        console.error("Error calculating edit cost:", err);
+        setEditCost(1); // Default to $1
+      }
+    };
+    
+    calculateEditCost();
+  }, [phillboard.id, user]);
 
   const handleUpdatePhillboard = async () => {
     if (!tagline) {
@@ -47,6 +76,56 @@ export function usePhillboardEdit({
         toast.error("You must be logged in to edit a phillboard");
         setIsSubmitting(false);
         return;
+      }
+      
+      // Process payment for editing
+      if (editCost && editCost > 0) {
+        // Get user's current balance
+        const { data: userBalance, error: balanceError } = await supabase
+          .from('user_balances')
+          .select('balance')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (balanceError) throw balanceError;
+        
+        // Check if user has enough balance
+        if (!userBalance || userBalance.balance < editCost) {
+          toast.error(`Insufficient funds. You need $${editCost.toFixed(2)} to edit this phillboard.`);
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // Update user's balance
+        const { error: updateError } = await supabase
+          .from('user_balances')
+          .update({ 
+            balance: userBalance.balance - editCost,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', session.user.id);
+          
+        if (updateError) throw updateError;
+        
+        // Let the user know the cost
+        toast.info(`Edited phillboard for $${editCost.toFixed(2)}`);
+        
+        // If the user is not the original creator, give them 50% of the edit cost
+        if (phillboard.user_id && phillboard.user_id !== session.user.id) {
+          const creatorShare = editCost * 0.5;
+          
+          const { error: creatorUpdateError } = await supabase
+            .rpc('add_to_balance', { 
+              user_id: phillboard.user_id, 
+              amount: creatorShare 
+            });
+            
+          if (creatorUpdateError) {
+            console.error("Error paying original creator:", creatorUpdateError);
+          } else {
+            toast.info(`The original creator earned $${creatorShare.toFixed(2)} from your edit.`);
+          }
+        }
       }
 
       // Get placement type from selected image
@@ -103,5 +182,6 @@ export function usePhillboardEdit({
     setSelectedImage,
     isSubmitting,
     handleUpdatePhillboard,
+    editCost
   };
 }

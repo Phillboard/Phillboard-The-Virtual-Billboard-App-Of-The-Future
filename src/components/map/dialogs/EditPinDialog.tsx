@@ -5,6 +5,7 @@ import { ImageSelector } from "./ImageSelector";
 import { DialogActions } from "./DialogActions";
 import { usePhillboardEdit } from "./hooks/usePhillboardEdit";
 import { MapPin } from "../types";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface EditPinDialogProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export function EditPinDialog({
   selectedPin,
   onUpdatePin
 }: EditPinDialogProps) {
+  const { user } = useAuth();
   
   const {
     tagline,
@@ -26,7 +28,8 @@ export function EditPinDialog({
     selectedImage,
     setSelectedImage,
     isSubmitting,
-    handleUpdatePhillboard
+    handleUpdatePhillboard,
+    editCost
   } = usePhillboardEdit({ 
     phillboard: selectedPin,
     onClose: () => onOpenChange(false),
@@ -50,6 +53,17 @@ export function EditPinDialog({
         <div className="space-y-4 py-4">
           <TaglineInput tagline={tagline} setTagline={setTagline} />
           <ImageSelector selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
+          
+          {user && editCost !== null && (
+            <div className="px-1 py-2">
+              <p className="text-sm text-gray-400">Edit cost: 
+                <span className="ml-2 font-medium text-neon-cyan">${editCost.toFixed(2)}</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Cost doubles with each edit.
+              </p>
+            </div>
+          )}
         </div>
         
         <DialogActions 

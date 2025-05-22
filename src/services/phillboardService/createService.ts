@@ -24,23 +24,8 @@ async function calculatePlacementCost(lat: number, lng: number, userId: string |
       
     if (error) throw error;
     
-    // No existing phillboards at this location
-    if (!existingPhillboards || existingPhillboards.length === 0) {
-      return { cost: 1, originalCreatorId: null, overwriteCount: 0 };
-    }
-    
-    // Calculate the overwrite count and cost
-    const overwriteCount = existingPhillboards.length;
-    const cost = Math.pow(2, overwriteCount); // $1, $2, $4, $8, $16, etc.
-    
-    // Get the original creator ID (most recent phillboard creator)
-    const originalCreatorId = existingPhillboards[0].user_id;
-    
-    return { 
-      cost, 
-      originalCreatorId: originalCreatorId !== userId ? originalCreatorId : null,
-      overwriteCount
-    };
+    // No matter how many existing phillboards at this location, new placement cost is $1
+    return { cost: 1, originalCreatorId: null, overwriteCount: existingPhillboards?.length || 0 };
   } catch (err) {
     console.error("Error calculating placement cost:", err);
     return { cost: 1, originalCreatorId: null, overwriteCount: 0 }; // Default to $1 if error
@@ -128,7 +113,7 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
       };
     }
     
-    // Calculate placement cost
+    // Calculate placement cost - always $1 for new phillboards
     const { cost, originalCreatorId, overwriteCount } = await calculatePlacementCost(
       phillboard.lat, 
       phillboard.lng, 
@@ -147,15 +132,7 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
     }
     
     // Show cost information to the user
-    if (overwriteCount > 0) {
-      toast.info(`This location has been overwritten ${overwriteCount} time(s). Cost: $${cost.toFixed(2)}`);
-      
-      if (originalCreatorId) {
-        toast.info(`The previous creator earned $${(cost * 0.5).toFixed(2)} from your placement.`);
-      }
-    } else {
-      toast.info(`Phillboard placed for $${cost.toFixed(2)}`);
-    }
+    toast.info(`Phillboard placed for $${cost.toFixed(2)}`);
     
     const { data, error } = await supabase
       .from('phillboards')
