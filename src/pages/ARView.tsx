@@ -1,12 +1,12 @@
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { ARButton, Interactive, Controllers, XR } from "@react-three/xr";
+import { ARButton, Interactive, XR } from "@react-three/xr";
 import { Text, Environment } from "@react-three/drei";
 
 // Interactive ARContent component with tap functionality
@@ -147,7 +147,6 @@ const ARView = () => {
       <div className="h-screen w-full">
         <Canvas>
           <XR>
-            <Controllers />
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <Environment preset="city" />
@@ -163,6 +162,7 @@ const ARView = () => {
             </Button>
           ) : arSupported === true ? (
             <ARButton 
+              sessionInit={{ optionalFeatures: ['dom-overlay'], domOverlay: { root: document.body } }}
               className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md" 
             >
               Enter AR
