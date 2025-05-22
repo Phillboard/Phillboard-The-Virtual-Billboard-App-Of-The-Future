@@ -75,14 +75,23 @@ const ARContent = ({ pin }: { pin: MapPin | null }) => {
 
 // Custom ARButton component using the useXR hook
 const CustomARButton = () => {
-  const { isPresenting, toggleSession } = useXR();
+  const xr = useXR();
   
   // Check if already in an XR session
-  if (isPresenting) return null;
+  if (xr.session) return null;
   
   return (
     <Button 
-      onClick={toggleSession}
+      onClick={() => {
+        if (typeof xr.toggleSession === 'function') {
+          xr.toggleSession();
+        } else if (typeof xr.setSession === 'function') {
+          xr.setSession();
+        } else {
+          console.error("No method to toggle XR session found");
+          toast.error("AR session could not be started");
+        }
+      }}
       className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
     >
       Enter AR
@@ -168,7 +177,6 @@ const ARView = () => {
         <Canvas>
           <XR 
             store={xrStore}
-            referenceSpace="local"
             sessionInit={{ 
               optionalFeatures: ['dom-overlay'], 
               domOverlay: { root: document.body } 
