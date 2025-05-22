@@ -6,13 +6,13 @@
 export const checkARSupport = async (): Promise<boolean> => {
   // Check if the WebXR API is available
   if (!('xr' in navigator)) {
+    console.log('WebXR API not available');
     return false;
   }
   
   try {
-    // Try to check if immersive-ar session is supported
-    // @ts-ignore - TypeScript doesn't know about isSessionSupported yet
-    return await navigator.xr?.isSessionSupported('immersive-ar');
+    // Check if immersive-ar session is supported
+    return await (navigator.xr as any).isSessionSupported('immersive-ar');
   } catch (err) {
     console.error("Error checking AR support:", err);
     return false;

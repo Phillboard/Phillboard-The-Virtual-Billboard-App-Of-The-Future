@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Controllers, useXR } from "@react-three/xr";
+import { useXR } from "@react-three/xr";
 
 /**
  * Custom AR button component that uses @react-three/xr hooks to manage WebXR session
@@ -16,14 +16,17 @@ export const CustomARButton = () => {
         xr.session.end();
       } else {
         // Otherwise start a new AR session with required features
-        navigator.xr?.requestSession('immersive-ar', {
-          requiredFeatures: ['hit-test'],
-          optionalFeatures: ['dom-overlay'],
-          domOverlay: { root: document.body }
-        }).then((session) => {
-          xr.setSession(session);
+        if (navigator.xr) {
+          const session = await navigator.xr.requestSession('immersive-ar', {
+            requiredFeatures: ['hit-test', 'dom-overlay'],
+            domOverlay: { root: document.body }
+          });
+          
+          // The session will be managed by the XR component
           toast.success("AR session started");
-        });
+        } else {
+          toast.error("WebXR not available in your browser");
+        }
       }
     } catch (err) {
       console.error("Failed to toggle AR session:", err);

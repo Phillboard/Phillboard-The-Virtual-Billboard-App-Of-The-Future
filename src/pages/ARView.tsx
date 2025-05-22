@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
-import { XR, Controllers } from "@react-three/xr";
+import { XR, createXRState } from "@react-three/xr";
 import { Environment } from "@react-three/drei";
 import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
@@ -11,6 +11,9 @@ import ARContent from "@/components/ar/ARContent";
 import CustomARButton from "@/components/ar/CustomARButton";
 import UnsupportedARView from "@/components/ar/UnsupportedARView";
 import BackButton from "@/components/ar/BackButton";
+
+// Create XR state store for the XR component
+const xrState = createXRState();
 
 /**
  * Main AR view page component
@@ -58,13 +61,18 @@ const ARView = () => {
       
       <div className="h-screen w-full">
         <Canvas>
-          <XR>
+          <XR 
+            store={xrState} 
+            sessionInit={{
+              requiredFeatures: ['hit-test', 'dom-overlay'],
+              domOverlay: { root: document.body }
+            }}
+          >
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <Environment preset="city" />
             
             <ARContent pin={pin} />
-            <Controllers />
           </XR>
         </Canvas>
         
