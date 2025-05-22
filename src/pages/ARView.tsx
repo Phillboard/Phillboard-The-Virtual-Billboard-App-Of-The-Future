@@ -6,8 +6,11 @@ import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { XR, useXR, Interactive } from "@react-three/xr";
+import { XR, useXR, Interactive, createXRStore } from "@react-three/xr";
 import { Text, Environment } from "@react-three/drei";
+
+// Create XR store once outside of component
+const xrStore = createXRStore();
 
 // Interactive ARContent component with tap functionality
 const ARContent = ({ pin }: { pin: MapPin | null }) => {
@@ -72,27 +75,14 @@ const ARContent = ({ pin }: { pin: MapPin | null }) => {
 
 // Custom ARButton component using the useXR hook
 const CustomARButton = () => {
-  // Get the XR context
-  const xr = useXR();
+  const { isPresenting, toggleSession } = useXR();
   
   // Check if already in an XR session
-  const isPresenting = !!xr.session;
-  
   if (isPresenting) return null;
   
   return (
     <Button 
-      onClick={() => {
-        // Use the proper method to create an XR session
-        if (xr.createSession) {
-          xr.createSession();
-        } else if (xr.connect) {
-          // Fallback for different versions of the library
-          xr.connect();
-        } else {
-          console.error("No method to create XR session found");
-        }
-      }}
+      onClick={toggleSession}
       className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
     >
       Enter AR
@@ -176,7 +166,14 @@ const ARView = () => {
       
       <div className="h-screen w-full">
         <Canvas>
-          <XR>
+          <XR 
+            store={xrStore}
+            referenceSpace="local"
+            sessionInit={{ 
+              optionalFeatures: ['dom-overlay'], 
+              domOverlay: { root: document.body } 
+            }}
+          >
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <Environment preset="city" />
