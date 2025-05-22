@@ -2,6 +2,7 @@
 import { ReactNode } from "react";
 import { UserLocation, MapPin } from "./types";
 import { GoogleMapComponent } from "./GoogleMapComponent";
+import { LastUpdateBanner } from "./LastUpdateBanner";
 
 interface MapBackgroundProps {
   isLoading: boolean;
@@ -27,6 +28,9 @@ export function MapBackground({
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div className="w-full h-full bg-gray-900 opacity-90 relative">
+        {/* Last Update Banner */}
+        <LastUpdateBanner />
+        
         {/* Google Map Component */}
         <GoogleMapComponent
           userLocation={userLocation}

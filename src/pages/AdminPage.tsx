@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { generateSampleData, checkSampleDataExists } from "@/services/sampleDataService";
 import { useAuth } from "@/contexts/AuthContext";
+import { UpdateTimestampSection } from "@/components/admin/UpdateTimestampSection";
 
 const AdminPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -46,6 +47,9 @@ const AdminPage = () => {
       
       {isAdmin(user) ? (
         <div className="space-y-6">
+          {/* Update Timestamp Section */}
+          <UpdateTimestampSection />
+          
           <div className="p-4 border border-white/10 rounded-lg bg-black/40">
             <h2 className="text-xl font-semibold mb-4">Generate Sample Data</h2>
             <p className="text-sm text-gray-400 mb-4">
