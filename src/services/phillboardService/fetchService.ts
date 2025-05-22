@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { UserLocation, MapPin } from "@/components/map/types";
 import { calculateDistance, formatDistance } from "../utils/distanceUtils";
@@ -115,6 +114,51 @@ export async function fetchNearbyPhillboards(
     
   } catch (err) {
     console.error("Failed to fetch nearby phillboards:", err);
+    return [];
+  }
+}
+
+// Fetch phillboards created by a specific user
+export async function fetchUserPhillboards(userId: string): Promise<MapPin[]> {
+  try {
+    console.log(`Fetching phillboards for user ${userId}...`);
+    
+    // Fetch all phillboards from the database for this user
+    const { data, error } = await supabase
+      .from('phillboards')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching user phillboards:", error);
+      throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      console.log("No phillboards found for this user");
+      return [];
+    }
+    
+    console.log(`Found ${data.length} phillboards for user`);
+    
+    // Map database results to MapPin objects
+    const pins: MapPin[] = data.map(pin => ({
+      id: pin.id,
+      lat: pin.lat,
+      lng: pin.lng,
+      title: pin.title,
+      username: pin.username,
+      image_type: pin.image_type,
+      content: pin.content,
+      created_at: pin.created_at,
+      distance: "N/A" // Distance not applicable in this context
+    }));
+    
+    return pins;
+    
+  } catch (err) {
+    console.error("Failed to fetch user phillboards:", err);
     return [];
   }
 }
