@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useRef } from "react";
 import { UserLocation, MapPin } from "./types";
 import { toast } from "sonner";
-import { fetchNearbyPhillboards } from "@/services/phillboardService";
+import { fetchAllPhillboards, fetchNearbyPhillboards } from "@/services/phillboardService";
 
 interface LocationTrackerProps {
   onLocationUpdate: (location: UserLocation, pins: MapPin[]) => void;
@@ -66,8 +65,8 @@ export function LocationTracker({
     const userLocation = { lat: latitude, lng: longitude };
     
     try {
-      // Fetch real phillboards from database within specified radius
-      const phillboards = await fetchNearbyPhillboards(userLocation, radiusMiles);
+      // Fetch all phillboards up to 1000
+      const phillboards = await fetchAllPhillboards(userLocation);
       onLocationUpdate(userLocation, phillboards);
       onLoadingChange(false);
       
@@ -118,8 +117,8 @@ export function LocationTracker({
     const userLocation = { lat: fallbackLat, lng: fallbackLng };
     
     try {
-      // Try to fetch real phillboards even with fallback location, using specified radius
-      const phillboards = await fetchNearbyPhillboards(userLocation, radiusMiles);
+      // Try to fetch all phillboards with fallback location
+      const phillboards = await fetchAllPhillboards(userLocation);
       onLocationUpdate(userLocation, phillboards);
     } catch (error) {
       console.error("Error fetching phillboards with fallback location:", error);

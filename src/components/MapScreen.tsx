@@ -19,8 +19,8 @@ export function MapScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<UserLocation | null>(null);
-  const nearbyRadiusMiles = 0.5; // Define radius of 0.5 miles
-
+  // We'll remove the nearbyRadiusMiles limitation
+  
   const { user, isAdmin } = useAuth();
   const userIsAdmin = isAdmin(user);
   
@@ -88,7 +88,7 @@ export function MapScreen() {
         onLocationUpdate={handleLocationUpdate}
         onError={setError}
         onLoadingChange={setIsLoading}
-        radiusMiles={nearbyRadiusMiles}
+        radiusMiles={5} // Set a larger default radius but it's not restrictive anymore
       />
       
       {/* Map background with pins */}
@@ -107,7 +107,7 @@ export function MapScreen() {
         isLoading={isLoading}
         userLocation={userLocation}
         pinsCount={mapPins.length}
-        nearbyRadius={nearbyRadiusMiles}
+        nearbyRadius={0} // We're not using a fixed radius anymore
       />
 
       {/* Admin mode toggle button - extracted to its own component */}

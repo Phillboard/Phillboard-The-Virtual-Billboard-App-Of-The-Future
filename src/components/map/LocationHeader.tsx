@@ -15,7 +15,7 @@ export function LocationHeader({
   isLoading, 
   userLocation, 
   pinsCount, 
-  nearbyRadius = 0.5 
+  nearbyRadius = 0 
 }: LocationHeaderProps) {
   const [locationInfo, setLocationInfo] = useState<{ city: string; state: string } | null>(null);
 
@@ -64,7 +64,9 @@ export function LocationHeader({
           </Tooltip>
         </TooltipProvider>
       </div>
-      <div className="text-neon-cyan text-sm">{pinsCount} phillboards nearby</div>
+      <div className="text-neon-cyan text-sm">
+        {pinsCount} phillboards {nearbyRadius > 0 ? `within ${nearbyRadius} miles` : 'available'}
+      </div>
     </div>
   );
 }
