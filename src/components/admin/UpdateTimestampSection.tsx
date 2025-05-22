@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -12,7 +12,7 @@ export function UpdateTimestampSection() {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   
   // Fetch the current timestamp on component mount
-  useState(() => {
+  useEffect(() => {
     const fetchLastUpdate = async () => {
       try {
         const { data, error } = await supabase
@@ -41,7 +41,7 @@ export function UpdateTimestampSection() {
       const { error } = await supabase
         .from('app_settings')
         .update({ last_update_time: now.toISOString() })
-        .eq('id', 1);  // Assuming there's only one settings row with id=1
+        .eq('id', 1);
       
       if (error) throw error;
       
