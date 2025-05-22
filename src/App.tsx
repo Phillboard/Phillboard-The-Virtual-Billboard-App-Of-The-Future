@@ -17,15 +17,15 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <HotToaster 
-        toastOptions={{ 
-          style: { background: '#222', color: '#fff' }
-        }} 
-      />
       <BrowserRouter>
         <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <HotToaster 
+            toastOptions={{ 
+              style: { background: '#222', color: '#fff' }
+            }} 
+          />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
