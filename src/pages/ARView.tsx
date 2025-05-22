@@ -17,7 +17,7 @@ const xrState = createXRStore({
   // Set required features
   requiredFeatures: ['hit-test', 'dom-overlay'],
   // For domOverlay, specify the root DOM element
-  domOverlay: { root: document.body }
+  domOverlay: { root: document.body } as any
 });
 
 /**
