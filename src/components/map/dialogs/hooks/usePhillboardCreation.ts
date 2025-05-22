@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { MapPin, UserLocation } from "../../types";
 import { createPhillboard } from "@/services/phillboardService";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export function usePhillboardCreation({ onCreatePin, onClose }: {
   onCreatePin: (pin: MapPin) => void;
@@ -28,41 +29,48 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
     setIsSubmitting(true);
     
     try {
+      // Check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      const username = user?.email?.split('@')[0] || "Anonymous";
+      
       // Create the phillboard in the database
       const newPhillboardData = {
         title: tagline,
-        username: user?.email?.split('@')[0] || "Anonymous",
+        username: username,
         lat: locationToUse.lat,
         lng: locationToUse.lng,
         image_type: `image-${selectedImage}`,
-        content: null,
-        user_id: user?.id // Explicitly set user_id so RLS policies can be applied correctly
+        content: null
       };
+      
+      if (session?.user?.id) {
+        newPhillboardData['user_id'] = session.user.id;
+      }
       
       const newPhillboard = await createPhillboard(newPhillboardData);
       
-      // If the creation was successful, add the new pin to the map
-      if (newPhillboard) {
-        // Create the visual pin for the map with distance calculation
-        const mapPin: MapPin = {
-          id: newPhillboard.id,
-          lat: newPhillboard.lat,
-          lng: newPhillboard.lng,
-          title: newPhillboard.title,
-          username: newPhillboard.username,
-          distance: "0 ft", // It's at the user's location
-          image_type: newPhillboard.image_type,
-          content: newPhillboard.content
-        };
-        
-        onCreatePin(mapPin);
-        toast.success("Phillboard created successfully!");
+      // Create the visual pin for the map with distance calculation
+      const mapPin: MapPin = {
+        id: newPhillboard.id,
+        lat: newPhillboard.lat,
+        lng: newPhillboard.lng,
+        title: newPhillboard.title,
+        username: newPhillboard.username,
+        distance: "0 ft", // It's at the user's location
+        image_type: newPhillboard.image_type,
+        content: newPhillboard.content
+      };
+      
+      onCreatePin(mapPin);
+      
+      if (!session?.user) {
+        toast.info("Created phillboard locally (offline mode)");
       } else {
-        throw new Error("Failed to create phillboard - no data returned");
+        toast.success("Phillboard created successfully!");
       }
+      
     } catch (error) {
       console.error("Error creating phillboard:", error);
-      toast.error("Failed to create phillboard. Please try again.");
       
       // Fallback to client-side creation if database insertion fails
       const fallbackPin: MapPin = {

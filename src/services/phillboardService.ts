@@ -88,6 +88,25 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
   try {
     console.log("Creating new phillboard:", phillboard);
     
+    // Check if we have user authentication
+    const { data: { session } } = await supabase.auth.getSession();
+    const isAuthenticated = !!session?.user;
+    
+    // If user is not authenticated, we'll return a locally created phillboard
+    if (!isAuthenticated) {
+      console.log("User not authenticated, returning local phillboard");
+      return {
+        id: Date.now().toString(),
+        lat: phillboard.lat,
+        lng: phillboard.lng,
+        title: phillboard.title,
+        username: phillboard.username,
+        image_type: phillboard.image_type || 'text',
+        content: phillboard.content || null,
+        created_at: new Date().toISOString(),
+      };
+    }
+    
     const { data, error } = await supabase
       .from('phillboards')
       .insert([
@@ -98,7 +117,7 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
           lng: phillboard.lng,
           image_type: phillboard.image_type || 'text',
           content: phillboard.content || null,
-          user_id: phillboard.user_id // Important for RLS policies
+          user_id: session.user.id // Always use the authenticated user's ID
         }
       ])
       .select();
