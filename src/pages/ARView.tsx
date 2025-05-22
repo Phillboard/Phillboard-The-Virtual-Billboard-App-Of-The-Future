@@ -1,16 +1,13 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { XR, useXR, Interactive, createXRStore } from "@react-three/xr";
+import { XR, Interactive } from "@react-three/xr";
 import { Text, Environment } from "@react-three/drei";
-
-// Create XR store once outside of component
-const xrStore = createXRStore();
 
 // Interactive ARContent component with tap functionality
 const ARContent = ({ pin }: { pin: MapPin | null }) => {
@@ -73,25 +70,43 @@ const ARContent = ({ pin }: { pin: MapPin | null }) => {
   );
 };
 
-// Custom ARButton component using the useXR hook
+// Custom ARButton component using manual XR session management
 const CustomARButton = () => {
-  const xr = useXR();
+  const [xrSession, setXrSession] = useState<XRSession | null>(null);
+  const isPresenting = Boolean(xrSession);
   
   // Check if already in an XR session
-  if (xr.session) return null;
+  if (isPresenting) return null;
+  
+  const startXr = async () => {
+    try {
+      if (!navigator.xr) {
+        toast.error("WebXR not supported in your browser");
+        return;
+      }
+      
+      const session = await navigator.xr.requestSession('immersive-ar', {
+        requiredFeatures: ['hit-test', 'dom-overlay'],
+        domOverlay: { root: document.body }
+      });
+      
+      setXrSession(session);
+      
+      // Handle session end
+      session.addEventListener('end', () => {
+        setXrSession(null);
+      });
+      
+      toast.success("AR session started");
+    } catch (err) {
+      console.error("Failed to start AR session:", err);
+      toast.error("Failed to start AR session");
+    }
+  };
   
   return (
     <Button 
-      onClick={() => {
-        if (typeof xr.toggleSession === 'function') {
-          xr.toggleSession();
-        } else if (typeof xr.setSession === 'function') {
-          xr.setSession();
-        } else {
-          console.error("No method to toggle XR session found");
-          toast.error("AR session could not be started");
-        }
-      }}
+      onClick={startXr}
       className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
     >
       Enter AR
@@ -175,10 +190,9 @@ const ARView = () => {
       
       <div className="h-screen w-full">
         <Canvas>
-          <XR 
-            store={xrStore}
+          <XR
             sessionInit={{ 
-              optionalFeatures: ['dom-overlay'], 
+              requiredFeatures: ['hit-test', 'dom-overlay'], 
               domOverlay: { root: document.body } 
             }}
           >
