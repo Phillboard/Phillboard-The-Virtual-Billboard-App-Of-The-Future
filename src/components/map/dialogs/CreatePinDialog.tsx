@@ -2,7 +2,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TaglineInput } from "./TaglineInput";
 import { ImageSelector } from "./ImageSelector";
-import { PlacementTypeSelector } from "./PlacementTypeSelector";
 import { AdminLocationInfo } from "./AdminLocationInfo";
 import { DialogActions } from "./DialogActions";
 import { usePhillboardCreation } from "./hooks/usePhillboardCreation";
@@ -33,8 +32,6 @@ export function CreatePinDialog({
     setTagline,
     selectedImage,
     setSelectedImage,
-    placementType,
-    setPlacementType,
     isSubmitting,
     handleCreatePhillboard
   } = usePhillboardCreation({ 
@@ -46,7 +43,6 @@ export function CreatePinDialog({
     onOpenChange(false);
     setTagline("");
     setSelectedImage("1");
-    setPlacementType("human"); // Reset to default
   };
   
   return (
@@ -70,7 +66,6 @@ export function CreatePinDialog({
         <div className="space-y-4 py-4">
           <TaglineInput tagline={tagline} setTagline={setTagline} />
           <ImageSelector selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
-          <PlacementTypeSelector placementType={placementType} setPlacementType={setPlacementType} />
         </div>
         
         <DialogActions 

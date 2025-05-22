@@ -20,9 +20,18 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
 }) {
   const [tagline, setTagline] = useState("");
   const [selectedImage, setSelectedImage] = useState("1");
-  const [placementType, setPlacementType] = useState("human"); // Default to "human"
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
+
+  // Function to map selected image to placement type
+  const getPlacementType = (imageSelection: string) => {
+    switch (imageSelection) {
+      case "1": return "human";
+      case "2": return "building";
+      case "3": return "billboard";
+      default: return "human";
+    }
+  };
 
   const handleCreatePhillboard = async (locationToUse: UserLocation | null) => {
     if (!tagline) {
@@ -42,6 +51,9 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
       const { data: { session } } = await supabase.auth.getSession();
       const username = user?.email?.split('@')[0] || "Anonymous";
       
+      // Get the placement type from selected image
+      const placementType = getPlacementType(selectedImage);
+      
       // Create the phillboard in the database
       const newPhillboardData = {
         title: tagline,
@@ -49,7 +61,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
         lat: locationToUse.lat,
         lng: locationToUse.lng,
         image_type: `image-${selectedImage}`,
-        placement_type: placementType, // Add placement type
+        placement_type: placementType,
         content: null
       };
       
@@ -68,7 +80,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
         username: newPhillboard.username,
         distance: "0 ft", // It's at the user's location
         image_type: newPhillboard.image_type,
-        placement_type: newPhillboard.placement_type, // Include placement type
+        placement_type: newPhillboard.placement_type,
         content: newPhillboard.content
       };
       
@@ -114,7 +126,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
         username: user?.email?.split('@')[0] || "Anonymous",
         distance: "0 ft",
         image_type: `image-${selectedImage}`,
-        placement_type: placementType, // Include placement type in fallback
+        placement_type: getPlacementType(selectedImage),
       };
       
       onCreatePin(fallbackPin);
@@ -130,8 +142,6 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
     setTagline,
     selectedImage,
     setSelectedImage,
-    placementType,
-    setPlacementType,
     isSubmitting,
     handleCreatePhillboard
   };
