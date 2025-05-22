@@ -72,13 +72,17 @@ const ARContent = ({ pin }: { pin: MapPin | null }) => {
 
 // Custom ARButton component using the useXR hook
 const CustomARButton = () => {
-  const { isPresenting, enterAR } = useXR();
+  // Get the XR context
+  const xr = useXR();
+  
+  // Check if already in an XR session
+  const isPresenting = !!xr.session;
   
   if (isPresenting) return null;
   
   return (
     <Button 
-      onClick={enterAR}
+      onClick={() => xr.setSession()}
       className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
     >
       Enter AR
@@ -163,7 +167,6 @@ const ARView = () => {
       <div className="h-screen w-full">
         <Canvas>
           <XR
-            referenceSpace="local"
             sessionInit={{ 
               optionalFeatures: ['dom-overlay'], 
               domOverlay: { root: document.body } 
