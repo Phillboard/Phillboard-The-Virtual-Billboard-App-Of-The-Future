@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Wallet } from "lucide-react";
+import { getUserBalance } from "@/services/phillboardService";
 
 export function UserBalance() {
   const { user } = useAuth();
@@ -14,16 +15,10 @@ export function UserBalance() {
     const fetchBalance = async () => {
       if (!user) return;
       
+      setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('user_balances')
-          .select('balance')
-          .eq('id', user.id)
-          .single();
-        
-        if (error) throw error;
-        
-        setBalance(data?.balance !== undefined ? Number(data.balance) : null);
+        const userBalance = await getUserBalance();
+        setBalance(userBalance);
       } catch (error) {
         console.error("Error fetching balance:", error);
       } finally {
@@ -32,6 +27,26 @@ export function UserBalance() {
     };
     
     fetchBalance();
+    
+    // Set up a realtime subscription to update balance when it changes
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'user_balances',
+          filter: `id=eq.${user?.id}` 
+        }, 
+        (payload) => {
+          setBalance(Number(payload.new.balance));
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
   
   if (isLoading) {

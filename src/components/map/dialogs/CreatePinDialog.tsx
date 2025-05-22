@@ -6,6 +6,7 @@ import { AdminLocationInfo } from "./AdminLocationInfo";
 import { DialogActions } from "./DialogActions";
 import { usePhillboardCreation } from "./hooks/usePhillboardCreation";
 import { UserLocation, MapPin } from "../types";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CreatePinDialogProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function CreatePinDialog({
 }: CreatePinDialogProps) {
   const locationToUse = selectedLocation || userLocation;
   const isCustomLocation = !!selectedLocation;
+  const { user } = useAuth();
   
   const {
     tagline,
@@ -33,7 +35,8 @@ export function CreatePinDialog({
     selectedImage,
     setSelectedImage,
     isSubmitting,
-    handleCreatePhillboard
+    handleCreatePhillboard,
+    estimatedCost
   } = usePhillboardCreation({ 
     onCreatePin, 
     onClose: () => onOpenChange(false)
@@ -66,6 +69,17 @@ export function CreatePinDialog({
         <div className="space-y-4 py-4">
           <TaglineInput tagline={tagline} setTagline={setTagline} />
           <ImageSelector selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
+          
+          {user && estimatedCost !== null && (
+            <div className="px-1 py-2">
+              <p className="text-sm text-gray-400">Estimated cost: 
+                <span className="ml-2 font-medium text-neon-cyan">${estimatedCost.toFixed(2)}</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Cost increases if this location already has phillboards.
+              </p>
+            </div>
+          )}
         </div>
         
         <DialogActions 

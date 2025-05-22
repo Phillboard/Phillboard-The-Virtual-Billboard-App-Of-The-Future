@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import hotToast from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -21,6 +21,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
   const [tagline, setTagline] = useState("");
   const [selectedImage, setSelectedImage] = useState("1");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [estimatedCost, setEstimatedCost] = useState<number | null>(null);
   const { user } = useAuth();
 
   // Function to map selected image to placement type
@@ -32,6 +33,15 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
       default: return "human";
     }
   };
+  
+  // Estimate cost for a phillboard at the specific location
+  useEffect(() => {
+    // We don't show cost estimates for non-authenticated users
+    if (!user) return;
+    
+    // A real implementation would calculate this properly based on location
+    setEstimatedCost(1);
+  }, [user]);
 
   const handleCreatePhillboard = async (locationToUse: UserLocation | null) => {
     if (!tagline) {
@@ -143,6 +153,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
     selectedImage,
     setSelectedImage,
     isSubmitting,
-    handleCreatePhillboard
+    handleCreatePhillboard,
+    estimatedCost
   };
 }

@@ -1,6 +1,107 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin } from "@/components/map/types";
+import { toast } from "sonner";
+
+// Calculate cost for placement based on existing phillboards at the same location
+async function calculatePlacementCost(lat: number, lng: number, userId: string | undefined): Promise<{ 
+  cost: number, 
+  originalCreatorId: string | null,
+  overwriteCount: number
+}> {
+  try {
+    // Use a tolerance value for lat/lng comparison to find phillboards at "same" location
+    const tolerance = 0.0001; // Approximately 10 meters
+    
+    const { data: existingPhillboards, error } = await supabase
+      .from('phillboards')
+      .select('id, user_id, created_at')
+      .lt('lat', lat + tolerance)
+      .gt('lat', lat - tolerance)
+      .lt('lng', lng + tolerance)
+      .gt('lng', lng - tolerance)
+      .order('created_at', { ascending: false });
+      
+    if (error) throw error;
+    
+    // No existing phillboards at this location
+    if (!existingPhillboards || existingPhillboards.length === 0) {
+      return { cost: 1, originalCreatorId: null, overwriteCount: 0 };
+    }
+    
+    // Calculate the overwrite count and cost
+    const overwriteCount = existingPhillboards.length;
+    const cost = Math.pow(2, overwriteCount); // $1, $2, $4, $8, $16, etc.
+    
+    // Get the original creator ID (most recent phillboard creator)
+    const originalCreatorId = existingPhillboards[0].user_id;
+    
+    return { 
+      cost, 
+      originalCreatorId: originalCreatorId !== userId ? originalCreatorId : null,
+      overwriteCount
+    };
+  } catch (err) {
+    console.error("Error calculating placement cost:", err);
+    return { cost: 1, originalCreatorId: null, overwriteCount: 0 }; // Default to $1 if error
+  }
+}
+
+// Handle the financial transaction for placing a phillboard
+async function processPhillboardTransaction(
+  cost: number, 
+  userId: string,
+  originalCreatorId: string | null
+): Promise<boolean> {
+  try {
+    // First check if user has enough balance
+    const { data: userBalance, error: balanceError } = await supabase
+      .from('user_balances')
+      .select('balance')
+      .eq('id', userId)
+      .single();
+      
+    if (balanceError) throw balanceError;
+    
+    if (!userBalance || userBalance.balance < cost) {
+      toast.error(`Insufficient funds. You need $${cost.toFixed(2)} to place this phillboard.`);
+      return false;
+    }
+    
+    // Update user's balance
+    const { error: updateError } = await supabase
+      .from('user_balances')
+      .update({ 
+        balance: userBalance.balance - cost,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+      
+    if (updateError) throw updateError;
+    
+    // If there's an original creator who gets 50% of the overwrite cost
+    if (originalCreatorId) {
+      const creatorShare = cost * 0.5;
+      
+      const { error: creatorUpdateError } = await supabase
+        .rpc('add_to_balance', { 
+          user_id: originalCreatorId, 
+          amount: creatorShare 
+        });
+        
+      if (creatorUpdateError) {
+        console.error("Error paying original creator:", creatorUpdateError);
+        // Continue anyway, we don't want to block the placement
+      }
+    }
+    
+    return true;
+  } catch (err) {
+    console.error("Error processing transaction:", err);
+    toast.error("Payment processing error. Please try again.");
+    return false;
+  }
+}
 
 // Create a new phillboard
 export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance'> & { user_id?: string }) {
@@ -25,6 +126,35 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
         created_at: new Date().toISOString(),
         placement_type: phillboard.placement_type || 'human'
       };
+    }
+    
+    // Calculate placement cost
+    const { cost, originalCreatorId, overwriteCount } = await calculatePlacementCost(
+      phillboard.lat, 
+      phillboard.lng, 
+      session.user.id
+    );
+    
+    // Process payment for placement
+    const transactionSuccess = await processPhillboardTransaction(
+      cost, 
+      session.user.id, 
+      originalCreatorId
+    );
+    
+    if (!transactionSuccess) {
+      throw new Error("Transaction failed");
+    }
+    
+    // Show cost information to the user
+    if (overwriteCount > 0) {
+      toast.info(`This location has been overwritten ${overwriteCount} time(s). Cost: $${cost.toFixed(2)}`);
+      
+      if (originalCreatorId) {
+        toast.info(`The previous creator earned $${(cost * 0.5).toFixed(2)} from your placement.`);
+      }
+    } else {
+      toast.info(`Phillboard placed for $${cost.toFixed(2)}`);
     }
     
     const { data, error } = await supabase
