@@ -9,4 +9,5 @@ export {
   getPlacementType, 
   calculateEditCost,
   getEditCount
-} from './editService';
+} from './edit';
+
