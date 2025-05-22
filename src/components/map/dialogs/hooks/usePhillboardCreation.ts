@@ -1,10 +1,18 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import hotToast from "react-hot-toast";
+import confetti from "canvas-confetti";
 import { MapPin, UserLocation } from "../../types";
-import { createPhillboard } from "@/services/phillboardService";
+import { 
+  createPhillboard, 
+  getUserPhillboardCount, 
+  getPhillboardPercentile 
+} from "@/services/phillboardService";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { ordinal } from "@/utils/ordinal";
+import successSoundUrl from "@/assets/success.mp3";
 
 export function usePhillboardCreation({ onCreatePin, onClose }: {
   onCreatePin: (pin: MapPin) => void;
@@ -63,10 +71,32 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
       
       onCreatePin(mapPin);
       
-      if (!session?.user) {
-        toast.info("Created phillboard locally (offline mode)");
+      if (session?.user) {
+        // Celebrate with confetti
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        
+        // Play success sound
+        try {
+          new Audio(successSoundUrl).play();
+        } catch (err) {
+          console.error("Could not play success sound:", err);
+        }
+        
+        // Get user stats
+        const count = await getUserPhillboardCount(session.user.id);
+        const percentile = await getPhillboardPercentile(session.user.id);
+        
+        // Show a custom toast
+        hotToast.success(
+          `🎉 You placed your ${ordinal(count)} Phillboard!\n` +
+          `You've got more boards than ${Math.round(percentile)}% of people.`
+        );
       } else {
-        toast.success("Phillboard created successfully!");
+        toast.info("Created phillboard locally (offline mode)");
       }
       
     } catch (error) {

@@ -10,6 +10,7 @@ import AdminPage from "./pages/AdminPage";
 import Auth from "./pages/Auth";
 import ARView from "./pages/ARView";
 import { AuthProvider } from "./contexts/AuthContext";
+import { Toaster as HotToaster } from 'react-hot-toast';
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,11 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <HotToaster 
+        toastOptions={{ 
+          style: { background: '#222', color: '#fff' }
+        }} 
+      />
       <BrowserRouter>
         <AuthProvider>
           <Routes>
