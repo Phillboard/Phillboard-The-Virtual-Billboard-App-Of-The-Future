@@ -82,7 +82,17 @@ const CustomARButton = () => {
   
   return (
     <Button 
-      onClick={() => xr.setSession()}
+      onClick={() => {
+        // Use the proper method to create an XR session
+        if (xr.createSession) {
+          xr.createSession();
+        } else if (xr.connect) {
+          // Fallback for different versions of the library
+          xr.connect();
+        } else {
+          console.error("No method to create XR session found");
+        }
+      }}
       className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
     >
       Enter AR
@@ -166,12 +176,7 @@ const ARView = () => {
       
       <div className="h-screen w-full">
         <Canvas>
-          <XR
-            sessionInit={{ 
-              optionalFeatures: ['dom-overlay'], 
-              domOverlay: { root: document.body } 
-            }}
-          >
+          <XR>
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <Environment preset="city" />
