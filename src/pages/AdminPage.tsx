@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { generateSampleData, checkSampleDataExists } from "@/services/sampleDataService";
 import { useAuth } from "@/contexts/AuthContext";
 import { UpdateTimestampSection } from "@/components/admin/UpdateTimestampSection";
+import { AdminScreen } from "@/components/AdminScreen";
 
 const AdminPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -50,6 +51,7 @@ const AdminPage = () => {
           {/* Update Timestamp Section */}
           <UpdateTimestampSection />
           
+          {/* Sample Data Generator */}
           <div className="p-4 border border-white/10 rounded-lg bg-black/40">
             <h2 className="text-xl font-semibold mb-4">Generate Sample Data</h2>
             <p className="text-sm text-gray-400 mb-4">
@@ -73,7 +75,10 @@ const AdminPage = () => {
             </Button>
           </div>
           
-          {/* Additional admin tools could be added here */}
+          {/* Admin Screen Component */}
+          <div className="p-4 border border-white/10 rounded-lg bg-black/40">
+            <AdminScreen />
+          </div>
         </div>
       ) : (
         <div className="p-4 border border-red-500/30 rounded-lg bg-red-500/10">
