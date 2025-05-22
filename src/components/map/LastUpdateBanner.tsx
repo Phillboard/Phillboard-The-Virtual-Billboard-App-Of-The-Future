@@ -55,8 +55,8 @@ export function LastUpdateBanner() {
   if (isLoading || !lastUpdate) return null;
 
   return (
-    <div className="absolute top-0 left-0 right-0 bg-black/60 backdrop-blur-sm z-10 py-1 px-4 flex items-center justify-center gap-2 text-sm text-white/80 border-b border-white/10">
-      <Clock className="h-3 w-3 text-neon-cyan" />
+    <div className="bg-black/60 backdrop-blur-sm py-2 px-4 rounded-md flex items-center justify-center gap-2 text-sm text-white/80 border border-white/10 mb-4">
+      <Clock className="h-4 w-4 text-neon-cyan" />
       <span>
         Last updated: {format(lastUpdate, "MMM d, yyyy 'at' h:mm a")}
       </span>

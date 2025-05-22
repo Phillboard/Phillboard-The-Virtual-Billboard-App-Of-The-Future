@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
 import { Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { LastUpdateBanner } from "./map/LastUpdateBanner";
 
 // Fake phillboards data
 const phillboardsData = [
@@ -34,8 +35,11 @@ export function ProfileScreen() {
     .slice(0, 2);
   
   return (
-    <div className="screen">
-      <div className="space-y-6">
+    <div className="screen relative">
+      {/* Last Update Banner */}
+      <LastUpdateBanner />
+      
+      <div className="space-y-6 mt-8">
         {/* User Info Card */}
         <div className="neon-card p-6 rounded-lg text-center">
           <Avatar className="w-24 h-24 mx-auto mb-4 border-2 border-neon-cyan">
