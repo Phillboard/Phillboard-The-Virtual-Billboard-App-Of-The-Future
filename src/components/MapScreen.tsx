@@ -48,6 +48,14 @@ export function MapScreen() {
     setSelectedLocation(null);
   };
 
+  const handlePinDelete = () => {
+    // Remove the deleted pin from the local state
+    if (selectedPin) {
+      setMapPins(currentPins => currentPins.filter(pin => pin.id !== selectedPin.id));
+      setSelectedPin(null);
+    }
+  };
+
   const handleMapClick = (location: UserLocation) => {
     if (userIsAdmin && isAdminMode) {
       setSelectedLocation(location);
@@ -99,6 +107,7 @@ export function MapScreen() {
       <PinPopup
         selectedPin={selectedPin}
         onClose={() => setSelectedPin(null)}
+        onPinDelete={handlePinDelete}
       />
       
       {/* FAB for creating a new phillboard */}

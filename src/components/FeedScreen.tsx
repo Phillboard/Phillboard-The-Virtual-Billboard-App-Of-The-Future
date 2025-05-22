@@ -3,6 +3,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
+import { DeletePinDialog } from "./map/dialogs/DeletePinDialog";
+import { MapPin } from "./map/types";
+import { Trash2 } from "lucide-react";
+import { Button } from "./ui/button";
+import { toast } from "sonner";
 
 interface Phillboard {
   id: string;
@@ -18,7 +23,9 @@ interface Phillboard {
 export function FeedScreen() {
   const [phillboards, setPhillboards] = useState<Phillboard[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const [selectedPin, setSelectedPin] = useState<MapPin | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Fetch initial data and set up realtime subscription
   useEffect(() => {
@@ -65,6 +72,20 @@ export function FeedScreen() {
           });
         }
       )
+      .on('postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'phillboards'
+        },
+        (payload) => {
+          console.log('Deleted phillboard:', payload);
+          // Remove deleted phillboard from the list
+          setPhillboards(currentPhillboards => {
+            return currentPhillboards.filter(board => board.id !== payload.old.id);
+          });
+        }
+      )
       .subscribe();
     
     return () => {
@@ -84,6 +105,29 @@ export function FeedScreen() {
   // Get approximate location description based on coordinates
   const getLocationDescription = (lat: number, lng: number) => {
     return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  };
+
+  // Check if user can delete this phillboard
+  const canDeletePhillboard = (phillboard: Phillboard) => {
+    return isAdmin(user) || (user?.user_metadata?.username === phillboard.username);
+  };
+
+  // Handle delete button click
+  const handleDeleteClick = (phillboard: Phillboard) => {
+    // Convert Phillboard to MapPin format
+    const selectedPin: MapPin = {
+      id: phillboard.id,
+      lat: phillboard.lat,
+      lng: phillboard.lng,
+      title: phillboard.title,
+      username: phillboard.username,
+      distance: "nearby", // Placeholder for distance
+      image_type: phillboard.image_type,
+      content: phillboard.content
+    };
+    
+    setSelectedPin(selectedPin);
+    setIsDeleteDialogOpen(true);
   };
 
   return (
@@ -109,7 +153,20 @@ export function FeedScreen() {
             >
               <div className="flex justify-between items-start mb-1">
                 <h3 className="font-semibold text-cyan-400">{phillboard.title}</h3>
-                <span className="text-xs text-gray-400">{formatTime(phillboard.created_at)}</span>
+                <div className="flex items-center gap-2">
+                  {canDeletePhillboard(phillboard) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-red-500 hover:text-red-400 hover:bg-red-950/30"
+                      onClick={() => handleDeleteClick(phillboard)}
+                    >
+                      <Trash2 size={16} />
+                      <span className="sr-only">Delete</span>
+                    </Button>
+                  )}
+                  <span className="text-xs text-gray-400">{formatTime(phillboard.created_at)}</span>
+                </div>
               </div>
               
               <p className="text-sm text-gray-300 mb-2">
@@ -142,6 +199,17 @@ export function FeedScreen() {
           </div>
         )}
       </div>
+      
+      {/* Delete confirmation dialog */}
+      <DeletePinDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        selectedPin={selectedPin}
+        onDeleteSuccess={() => {
+          toast.success("Phillboard deleted successfully");
+          setSelectedPin(null);
+        }}
+      />
     </div>
   );
 }
