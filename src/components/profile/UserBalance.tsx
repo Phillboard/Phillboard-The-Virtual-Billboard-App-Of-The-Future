@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -98,7 +97,7 @@ export function UserBalance() {
   if (isLoading) {
     return (
       <Card className="p-4 bg-black/40 border border-white/10">
-        <div className="flex items-center">
+        <div className="flex items-center justify-center">
           <Wallet className="mr-3 text-neon-cyan" />
           <div className="w-full">
             <p className="text-sm text-gray-400">Your Balance</p>
@@ -121,45 +120,37 @@ export function UserBalance() {
   
   return (
     <Card className="p-4 bg-black/40 border border-white/10">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex items-center">
-          <Wallet className="mr-3 text-neon-cyan animate-pulse" />
-          <div>
-            <p className="text-sm text-gray-400">Your Balance</p>
-            <p className="text-xl font-bold text-neon-cyan">
-              {formatCurrency(userStats.balance)}
-            </p>
-          </div>
+      <div className="flex justify-between">
+        <div className="flex-1 flex flex-col items-center p-3 rounded-lg bg-black/20 border border-white/5 m-1">
+          <Wallet className="h-6 w-6 mb-2 text-neon-cyan animate-pulse" />
+          <p className="text-xs text-gray-400">Your Balance</p>
+          <p className="text-lg font-bold text-neon-cyan">
+            {formatCurrency(userStats.balance)}
+          </p>
         </div>
         
-        <div className="flex items-center">
-          <TrendingUp className="mr-3 text-green-400" />
-          <div>
-            <p className="text-sm text-gray-400">Total Earned</p>
-            <p className="text-lg font-semibold text-green-400">
-              {formatCurrency(userStats.totalEarned)}
-            </p>
-          </div>
+        <div className="flex-1 flex flex-col items-center p-3 rounded-lg bg-black/20 border border-white/5 m-1">
+          <TrendingUp className="h-6 w-6 mb-2 text-green-400" />
+          <p className="text-xs text-gray-400">Total Earned</p>
+          <p className="text-lg font-semibold text-green-400">
+            {formatCurrency(userStats.totalEarned)}
+          </p>
         </div>
         
-        <div className="flex items-center">
-          <ArrowDownLeft className="mr-3 text-amber-400" />
-          <div>
-            <p className="text-sm text-gray-400">Total Spent</p>
-            <p className="text-lg font-semibold text-amber-400">
-              {formatCurrency(userStats.totalSpent)}
-            </p>
-          </div>
+        <div className="flex-1 flex flex-col items-center p-3 rounded-lg bg-black/20 border border-white/5 m-1">
+          <ArrowDownLeft className="h-6 w-6 mb-2 text-amber-400" />
+          <p className="text-xs text-gray-400">Total Spent</p>
+          <p className="text-lg font-semibold text-amber-400">
+            {formatCurrency(userStats.totalSpent)}
+          </p>
         </div>
         
-        <div className="flex items-center">
-          <Award className="mr-3 text-fuchsia-400" />
-          <div>
-            <p className="text-sm text-gray-400">Phillboards Placed</p>
-            <p className="text-lg font-semibold text-fuchsia-400">
-              {userStats.totalPlaced}
-            </p>
-          </div>
+        <div className="flex-1 flex flex-col items-center p-3 rounded-lg bg-black/20 border border-white/5 m-1">
+          <Award className="h-6 w-6 mb-2 text-fuchsia-400" />
+          <p className="text-xs text-gray-400">Phillboards</p>
+          <p className="text-lg font-semibold text-fuchsia-400">
+            {userStats.totalPlaced}
+          </p>
         </div>
       </div>
     </Card>
