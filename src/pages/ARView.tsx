@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
-import { XR } from "@react-three/xr";
+import { XR, DefaultXRControllers } from "@react-three/xr";
 import { Environment } from "@react-three/drei";
 import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
@@ -64,6 +64,7 @@ const ARView = () => {
             <Environment preset="city" />
             
             <ARContent pin={pin} />
+            <DefaultXRControllers />
           </XR>
         </Canvas>
         

@@ -2,49 +2,34 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useXR } from "@react-three/xr";
 
 /**
- * Custom AR button component that manually manages WebXR session
+ * Custom AR button component that uses @react-three/xr hooks to manage WebXR session
  */
 export const CustomARButton = () => {
-  const [xrSession, setXrSession] = useState<XRSession | null>(null);
-  const isPresenting = Boolean(xrSession);
+  const { isPresenting, enterAR, exitAR } = useXR();
   
-  // Check if already in an XR session
-  if (isPresenting) return null;
-  
-  const startXr = async () => {
+  const handleARToggle = async () => {
     try {
-      if (!navigator.xr) {
-        toast.error("WebXR not supported in your browser");
-        return;
+      if (isPresenting) {
+        await exitAR();
+      } else {
+        await enterAR();
+        toast.success("AR session started");
       }
-      
-      const session = await navigator.xr.requestSession('immersive-ar', {
-        requiredFeatures: ['hit-test', 'dom-overlay'],
-        domOverlay: { root: document.body }
-      });
-      
-      setXrSession(session);
-      
-      // Handle session end
-      session.addEventListener('end', () => {
-        setXrSession(null);
-      });
-      
-      toast.success("AR session started");
     } catch (err) {
-      console.error("Failed to start AR session:", err);
+      console.error("Failed to toggle AR session:", err);
       toast.error("Failed to start AR session");
     }
   };
   
   return (
     <Button 
-      onClick={startXr}
+      onClick={handleARToggle}
       className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
     >
-      Enter AR
+      {isPresenting ? "Exit AR" : "Enter AR"}
     </Button>
   );
 };
