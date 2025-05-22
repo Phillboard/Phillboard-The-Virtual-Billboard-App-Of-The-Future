@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { generateSampleData, checkSampleDataExists } from "@/services/sampleDataService";
 import { useAuth } from "@/contexts/AuthContext";
 import { UpdateTimestampSection } from "@/components/admin/UpdateTimestampSection";
+import { DummyDataButton } from "@/components/admin/DummyDataButton";
 
 const AdminPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -71,6 +72,15 @@ const AdminPage = () => {
                 </>
               ) : "Generate Sample Data"}
             </Button>
+          </div>
+          
+          <div className="p-4 border border-white/10 rounded-lg bg-black/40">
+            <h2 className="text-xl font-semibold mb-4">Generate Dummy User</h2>
+            <p className="text-sm text-gray-400 mb-4">
+              This will create a random user with a @phillboards.com email address and 5-25 phillboards
+              with random taglines in the Charleston, WV area.
+            </p>
+            <DummyDataButton />
           </div>
           
           {/* Additional admin tools could be added here */}
