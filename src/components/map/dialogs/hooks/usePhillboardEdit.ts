@@ -108,7 +108,7 @@ export function usePhillboardEdit({
         if (updateError) throw updateError;
         
         // Let the user know the cost
-        toast.info(`Edited phillboard for $${editCost.toFixed(2)}`);
+        toast.success(`Edited phillboard for $${editCost.toFixed(2)}`);
         
         // If the user is not the original creator, give them 50% of the edit cost
         // First we need to get the original creator from the database
