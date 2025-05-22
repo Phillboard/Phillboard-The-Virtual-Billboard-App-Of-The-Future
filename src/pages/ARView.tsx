@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
-import { XR, XRProvider, DefaultXRController } from "@react-three/xr";
+import { XR, Controllers } from "@react-three/xr";
 import { Environment } from "@react-three/drei";
 import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
@@ -57,28 +57,26 @@ const ARView = () => {
       </div>
       
       <div className="h-screen w-full">
-        <XRProvider>
-          <Canvas>
-            <XR>
-              <ambientLight intensity={0.5} />
-              <pointLight position={[10, 10, 10]} />
-              <Environment preset="city" />
-              
-              <ARContent pin={pin} />
-              <DefaultXRController />
-            </XR>
-          </Canvas>
-          
-          <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10">
-            {arSupported === null ? (
-              <div className="bg-black/40 text-white/50 border border-white/10 py-2 px-4 rounded-md">
-                Checking AR Support...
-              </div>
-            ) : arSupported === true ? (
-              <CustomARButton />
-            ) : null}
-          </div>
-        </XRProvider>
+        <Canvas>
+          <XR>
+            <ambientLight intensity={0.5} />
+            <pointLight position={[10, 10, 10]} />
+            <Environment preset="city" />
+            
+            <ARContent pin={pin} />
+            <Controllers />
+          </XR>
+        </Canvas>
+        
+        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10">
+          {arSupported === null ? (
+            <div className="bg-black/40 text-white/50 border border-white/10 py-2 px-4 rounded-md">
+              Checking AR Support...
+            </div>
+          ) : arSupported === true ? (
+            <CustomARButton />
+          ) : null}
+        </div>
       </div>
     </div>
   );
