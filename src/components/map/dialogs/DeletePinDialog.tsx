@@ -35,10 +35,11 @@ export function DeletePinDialog({
     try {
       setIsDeleting(true);
       
+      // Convert ID to string to ensure it works with Supabase's .eq() method
       const { error } = await supabase
         .from('phillboards')
         .delete()
-        .eq('id', selectedPin.id);
+        .eq('id', String(selectedPin.id));
       
       if (error) throw error;
       
