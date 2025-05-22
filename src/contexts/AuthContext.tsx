@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,7 +48,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Check for specific admin email or @mopads.com domain
     return user.email === "admin@mopads.com" || 
            user.email.endsWith("@mopads.com") ||
-           user.email.endsWith("@lovable.ai");
+           user.email.endsWith("@lovable.ai") ||
+           user.email.endsWith("@phillboards.com"); // Added phillboards.com domain
   };
 
   const signIn = async (email: string, password: string) => {
