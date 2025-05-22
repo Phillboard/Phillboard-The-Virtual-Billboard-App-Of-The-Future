@@ -96,7 +96,20 @@ export function usePhillboardEdit({
           return;
         }
         
-        // Update user's balance
+        // First, get the original creator from the database
+        const { data: originalPhillboard, error: phillboardError } = await supabase
+          .from("phillboards")
+          .select("user_id")
+          .eq("id", String(phillboard.id))
+          .single();
+          
+        if (phillboardError) {
+          console.error("Error getting original creator:", phillboardError);
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // Update user's balance (deduct the cost)
         const { error: updateError } = await supabase
           .from('user_balances')
           .update({ 
@@ -111,14 +124,7 @@ export function usePhillboardEdit({
         toast.success(`Edited phillboard for $${editCost.toFixed(2)}`);
         
         // If the user is not the original creator, give them 50% of the edit cost
-        // First we need to get the original creator from the database
-        const { data: originalPhillboard, error: phillboardError } = await supabase
-          .from("phillboards")
-          .select("user_id")
-          .eq("id", String(phillboard.id))
-          .single();
-        
-        if (!phillboardError && originalPhillboard && 
+        if (originalPhillboard && 
             originalPhillboard.user_id && 
             originalPhillboard.user_id !== session.user.id) {
           const creatorShare = editCost * 0.5;
@@ -131,6 +137,7 @@ export function usePhillboardEdit({
             
           if (creatorUpdateError) {
             console.error("Error paying original creator:", creatorUpdateError);
+            toast.error("Failed to pay original creator, but your edit was successful.");
           } else {
             toast.info(`The original creator earned $${creatorShare.toFixed(2)} from your edit.`);
           }
