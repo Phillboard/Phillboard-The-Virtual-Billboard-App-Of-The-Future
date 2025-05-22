@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { ARButton, Interactive, XR } from "@react-three/xr";
+import { XR, useXR, Interactive } from "@react-three/xr";
 import { Text, Environment } from "@react-three/drei";
 
 // Interactive ARContent component with tap functionality
@@ -67,6 +67,22 @@ const ARContent = ({ pin }: { pin: MapPin | null }) => {
         )}
       </group>
     </Interactive>
+  );
+};
+
+// Custom ARButton component using the useXR hook
+const CustomARButton = () => {
+  const { isPresenting, enterAR } = useXR();
+  
+  if (isPresenting) return null;
+  
+  return (
+    <Button 
+      onClick={enterAR}
+      className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
+    >
+      Enter AR
+    </Button>
   );
 };
 
@@ -146,7 +162,13 @@ const ARView = () => {
       
       <div className="h-screen w-full">
         <Canvas>
-          <XR>
+          <XR
+            referenceSpace="local"
+            sessionInit={{ 
+              optionalFeatures: ['dom-overlay'], 
+              domOverlay: { root: document.body } 
+            }}
+          >
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <Environment preset="city" />
@@ -161,12 +183,7 @@ const ARView = () => {
               Checking AR Support...
             </Button>
           ) : arSupported === true ? (
-            <ARButton 
-              sessionInit={{ optionalFeatures: ['dom-overlay'], domOverlay: { root: document.body } }}
-              className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md" 
-            >
-              Enter AR
-            </ARButton>
+            <CustomARButton />
           ) : null}
         </div>
       </div>
