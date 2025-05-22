@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +17,7 @@ interface Phillboard {
   content: string | null;
   lat: number;
   lng: number;
+  placement_type?: string; // Added the placement_type property
 }
 
 export function FeedScreen() {
