@@ -95,12 +95,15 @@ const processEditPayment = async (
 // Pay the original creator their share
 const payOriginalCreator = async (originalCreatorId: string, userId: string, editCost: number) => {
   if (!originalCreatorId || originalCreatorId === userId) {
-    return;
+    console.log("No original creator to pay or creator is current user");
+    return { success: true };
   }
   
   const creatorShare = editCost * 0.5;
   
   try {
+    console.log(`Paying original creator ${originalCreatorId} share of $${creatorShare}`);
+    
     const { data, error: creatorUpdateError } = await supabase
       .rpc('add_to_balance', { 
         user_id: originalCreatorId, 
@@ -110,13 +113,16 @@ const payOriginalCreator = async (originalCreatorId: string, userId: string, edi
     if (creatorUpdateError) {
       console.error("Error paying original creator:", creatorUpdateError);
       toast.error("Failed to pay original creator, but your edit was successful.");
+      return { success: false, error: creatorUpdateError };
     } else {
       console.log("Original creator payment successful:", data);
       toast.info(`The original creator earned $${creatorShare.toFixed(2)} from your edit.`);
+      return { success: true };
     }
   } catch (err) {
     console.error("Exception when paying creator:", err);
     toast.error("Failed to pay original creator, but your edit was successful.");
+    return { success: false, error: err };
   }
 };
 
@@ -131,22 +137,31 @@ const updatePhillboardInDatabase = async (
 ) => {
   const idString = typeof phillboardId === 'number' ? String(phillboardId) : phillboardId;
   
-  const { data, error } = await supabase
-    .from("phillboards")
-    .update(updates)
-    .eq("id", idString)
-    .select();
-
-  if (error) {
-    console.error("Error updating phillboard:", error);
-    throw new Error("Failed to update phillboard. You may not have permission to edit this phillboard.");
-  }
-
-  if (!data || data.length === 0) {
-    throw new Error("Failed to update phillboard");
-  }
+  console.log(`Updating phillboard ${idString} with:`, updates);
   
-  return data[0];
+  try {
+    const { data, error } = await supabase
+      .from("phillboards")
+      .update(updates)
+      .eq("id", idString)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating phillboard:", error);
+      throw new Error(`Failed to update phillboard: ${error.message}`);
+    }
+    
+    if (!data) {
+      throw new Error("Failed to retrieve updated phillboard");
+    }
+    
+    console.log("Phillboard update successful:", data);
+    return data;
+  } catch (error) {
+    console.error("Exception updating phillboard:", error);
+    throw error;
+  }
 };
 
 export function usePhillboardEdit({
@@ -187,23 +202,29 @@ export function usePhillboardEdit({
 
     try {
       // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
+      if (!user) {
         toast.error("You must be logged in to edit a phillboard");
         setIsSubmitting(false);
         return;
       }
       
-      // Process payment for editing
+      // Get placement type from selected image
+      const placementType = getPlacementType(selectedImage);
+      const updates = {
+        title: tagline,
+        image_type: `image-${selectedImage}`,
+        placement_type: placementType,
+      };
+      
+      // Process payment first
       if (editCost && editCost > 0) {
         try {
-          const paymentResult = await processEditPayment(editCost, session.user.id, phillboard.id);
+          const paymentResult = await processEditPayment(editCost, user.id, phillboard.id);
           toast.success(paymentResult.message);
           
           // Pay the original creator if applicable
           if (paymentResult.originalCreatorId) {
-            await payOriginalCreator(paymentResult.originalCreatorId, session.user.id, editCost);
+            await payOriginalCreator(paymentResult.originalCreatorId, user.id, editCost);
           }
         } catch (error) {
           if (error instanceof Error) {
@@ -215,40 +236,32 @@ export function usePhillboardEdit({
           return;
         }
       }
-
-      // Get placement type from selected image
-      const placementType = getPlacementType(selectedImage);
-
-      // Update the phillboard in the database
+      
+      // Then update the phillboard
       try {
-        await updatePhillboardInDatabase(phillboard.id, {
-          title: tagline,
-          image_type: `image-${selectedImage}`,
-          placement_type: placementType,
-        });
+        const updatedPhillboardData = await updatePhillboardInDatabase(phillboard.id, updates);
         
         // Create the updated visual pin for the map
         const updatedPin: MapPin = {
           ...phillboard,
-          title: tagline,
-          image_type: `image-${selectedImage}`,
-          placement_type: placementType,
+          ...updatedPhillboardData
         };
 
         onUpdatePin(updatedPin);
         toast.success("Phillboard updated successfully!");
         onClose();
       } catch (error) {
+        console.error("Failed to update phillboard:", error);
         if (error instanceof Error) {
           toast.error(error.message);
         } else {
           toast.error("Failed to update phillboard. Please try again.");
         }
-        setIsSubmitting(false);
       }
     } catch (error) {
-      console.error("Error updating phillboard:", error);
+      console.error("Error in handleUpdatePhillboard:", error);
       toast.error("Failed to update phillboard. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
