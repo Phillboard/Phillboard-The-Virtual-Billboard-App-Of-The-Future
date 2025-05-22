@@ -155,6 +155,14 @@ export type Database = {
         Args: { user_id: string; amount: number }
         Returns: undefined
       }
+      get_edit_count: {
+        Args: { p_phillboard_id: string }
+        Returns: number
+      }
+      record_edit_history: {
+        Args: { p_phillboard_id: string; p_user_id: string; p_cost: number }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

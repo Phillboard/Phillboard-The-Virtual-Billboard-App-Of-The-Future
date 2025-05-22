@@ -154,7 +154,7 @@ export const recordEditHistory = async (
   editCost: number
 ) => {
   try {
-    // Instead of directly inserting, use a stored procedure
+    // Use the record_edit_history database function
     const { data, error } = await supabase
       .rpc('record_edit_history', {
         p_phillboard_id: String(phillboardId),
