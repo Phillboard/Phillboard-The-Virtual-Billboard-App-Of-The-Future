@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { Feed } from "lucide-react";
 
 type Tab = {
   id: string;
@@ -18,6 +19,11 @@ const tabs: Tab[] = [
         <circle cx="12" cy="10" r="3"/>
       </svg>
     ),
+  },
+  {
+    id: "feed",
+    name: "Feed",
+    icon: <Feed className="nav-icon" />,
   },
   {
     id: "ar",

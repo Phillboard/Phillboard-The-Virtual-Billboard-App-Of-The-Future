@@ -7,6 +7,7 @@ import { MapScreen } from "@/components/MapScreen";
 import { ARScreen } from "@/components/ARScreen";
 import { StatsScreen } from "@/components/StatsScreen";
 import { ProfileScreen } from "@/components/ProfileScreen";
+import { FeedScreen } from "@/components/FeedScreen";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 
@@ -48,6 +49,7 @@ const Index = () => {
       {appState === "main" && (
         <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
           {activeTab === "map" && <MapScreen />}
+          {activeTab === "feed" && <FeedScreen />}
           {activeTab === "ar" && <ARScreen />}
           {activeTab === "stats" && <StatsScreen />}
           {activeTab === "profile" && <ProfileScreen />}
