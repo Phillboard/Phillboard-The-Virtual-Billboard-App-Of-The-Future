@@ -1,19 +1,23 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Interactive } from "@react-three/xr";
 import { Text } from "@react-three/drei";
 import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
+import { ARViewMode, getARScaling, getARPosition } from "@/utils/arUtils";
 
 interface ARContentProps {
   pin: MapPin | null;
+  viewMode?: ARViewMode;
 }
 
 /**
  * Interactive ARContent component with tap functionality
  */
-export const ARContent = ({ pin }: ARContentProps) => {
+export const ARContent = ({ pin, viewMode = ARViewMode.HUMAN }: ARContentProps) => {
   const [hovered, setHovered] = useState(false);
+  const scaling = getARScaling(viewMode);
+  const position = getARPosition(viewMode);
   
   if (!pin) return null;
   
@@ -23,7 +27,7 @@ export const ARContent = ({ pin }: ARContentProps) => {
       onHover={() => setHovered(true)}
       onBlur={() => setHovered(false)}
     >
-      <group position={[0, 0, -1]} scale={hovered ? 1.1 : 1}>
+      <group position={position} scale={scaling * (hovered ? 1.1 : 1)}>
         <mesh scale={[0.5, 0.3, 0.05]} castShadow>
           <boxGeometry />
           <meshStandardMaterial 

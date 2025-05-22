@@ -1,67 +1,12 @@
 
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import * as THREE from "three";
-import { Canvas } from "@react-three/fiber";
-import { Text, Environment } from "@react-three/drei";
 import { checkARSupport } from "@/utils/arUtils";
 import { useNavigate } from "react-router-dom";
-
-// AR Scene Component
-function ARScene() {
-  const [placePosition, setPlacePosition] = useState<THREE.Vector3 | null>(null);
-  
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
-      <Environment preset="city" />
-      
-      {/* Default Phillboards */}
-      <PhillboardObject position={[0, 0, -1]} text="Tech Hub" username="NeonRider" />
-      <PhillboardObject position={[1, 0.5, -2]} text="Future Now" username="DigitalNomad" />
-    </>
-  );
-}
-
-// Phillboard Object Component
-function PhillboardObject({ position, text, username = "User" }: { 
-  position: [number, number, number], 
-  text: string, 
-  username?: string 
-}) {
-  const groupRef = useRef<THREE.Group>(null);
-
-  return (
-    <group position={position} ref={groupRef}>
-      <mesh scale={[0.5, 0.3, 0.05]} castShadow>
-        <boxGeometry />
-        <meshStandardMaterial color="black" opacity={0.7} transparent />
-      </mesh>
-      
-      <Text
-        position={[0, 0, 0.03]}
-        fontSize={0.05}
-        color="#00FFFF"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {text}
-      </Text>
-      
-      <Text
-        position={[0, -0.1, 0.03]}
-        fontSize={0.03}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-      >
-        @{username}
-      </Text>
-    </group>
-  );
-}
+import HumanARView from "@/components/ar/HumanARView";
+import BillboardARView from "@/components/ar/BillboardARView";
 
 // WebXR Button Component
 function WebXRButton() {
@@ -96,35 +41,47 @@ function WebXRButton() {
 
 // Main ARScreen Component
 export function ARScreen() {
-  const [showPlacement, setShowPlacement] = useState(false);
   const [arSupported, setARSupported] = useState<boolean | null>(null);
+  const [activeView, setActiveView] = useState<string>("human");
   
   // Check AR support on component mount
-  useState(() => {
+  useEffect(() => {
     checkARSupport().then(setARSupported);
-  });
-  
-  const handleCancel = () => {
-    setShowPlacement(false);
-    toast.info("Placement canceled");
-  };
-  
-  const handlePlacePhillboard = () => {
-    setShowPlacement(true);
-    toast.info("Tap where you'd like to place your phillboard");
-  };
+  }, []);
   
   return (
     <div className="screen relative bg-black p-0 h-full">
       <div className="absolute inset-0">
-        <Canvas>
-          <ARScene />
-        </Canvas>
-        
-        {/* AR Info Overlay */}
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-sm py-2 px-4 rounded-full text-sm text-white z-10">
-          AR Preview
-        </div>
+        <Tabs 
+          defaultValue="human" 
+          className="w-full" 
+          onValueChange={setActiveView}
+        >
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-lg py-1 px-1 rounded-full z-20">
+            <TabsList className="bg-black/20 backdrop-blur-sm">
+              <TabsTrigger 
+                value="human"
+                className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-white"
+              >
+                Human View
+              </TabsTrigger>
+              <TabsTrigger 
+                value="billboard"
+                className="data-[state=active]:bg-neon-cyan/20 data-[state=active]:text-white"
+              >
+                Billboard View
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          
+          <TabsContent value="human" className="h-full mt-0">
+            <HumanARView />
+          </TabsContent>
+          
+          <TabsContent value="billboard" className="h-full mt-0">
+            <BillboardARView />
+          </TabsContent>
+        </Tabs>
         
         <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10 space-y-4">
           {arSupported === null ? (
@@ -136,9 +93,9 @@ export function ARScreen() {
               <WebXRButton />
               <Button 
                 className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan"
-                onClick={handlePlacePhillboard}
+                onClick={() => toast.info(`Place ${activeView === "human" ? "Human" : "Billboard"} Phillboard`)}
               >
-                Place Phillboard
+                Place {activeView === "human" ? "Human" : "Billboard"} Phillboard
               </Button>
             </div>
           ) : (
@@ -148,28 +105,6 @@ export function ARScreen() {
             </div>
           )}
         </div>
-        
-        {/* Placement UI */}
-        {showPlacement && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
-            <div className="phillboard w-40 shadow-neon-cyan bg-black/80 pointer-events-auto">
-              <div className="text-center">
-                <h3 className="text-neon-cyan mb-1">New Phillboard</h3>
-                <p className="text-sm text-white/70">Tap to place here</p>
-              </div>
-            </div>
-            
-            <div className="absolute bottom-24 w-full flex justify-center gap-4 p-4 pointer-events-auto">
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                className="flex-1 max-w-[120px] bg-black/60 border-white/20 hover:bg-black/80"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -18,3 +18,37 @@ export const checkARSupport = async (): Promise<boolean> => {
     return false;
   }
 };
+
+/**
+ * AR view modes enum
+ */
+export enum ARViewMode {
+  HUMAN = 'human',
+  BILLBOARD = 'billboard'
+}
+
+/**
+ * Get scaling factor based on AR view mode
+ */
+export const getARScaling = (mode: ARViewMode): number => {
+  switch (mode) {
+    case ARViewMode.BILLBOARD:
+      return 3.0;
+    case ARViewMode.HUMAN:
+    default:
+      return 1.0;
+  }
+};
+
+/**
+ * Get position offset based on AR view mode
+ */
+export const getARPosition = (mode: ARViewMode): [number, number, number] => {
+  switch (mode) {
+    case ARViewMode.BILLBOARD:
+      return [0, 1, -4];
+    case ARViewMode.HUMAN:
+    default:
+      return [0, 0, -1.5];
+  }
+};

@@ -6,16 +6,17 @@ import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
-import { checkARSupport } from "@/utils/arUtils";
+import { checkARSupport, ARViewMode } from "@/utils/arUtils";
 import ARContent from "@/components/ar/ARContent";
 import CustomARButton from "@/components/ar/CustomARButton";
 import UnsupportedARView from "@/components/ar/UnsupportedARView";
 import BackButton from "@/components/ar/BackButton";
+import { Button } from "@/components/ui/button";
 
 /**
  * Set up WebXR context within the Canvas
  */
-function ARSetup() {
+function ARSetup({ viewMode }: { viewMode: ARViewMode }) {
   const [isHitTestReady, setIsHitTestReady] = useState(false);
   
   // Component to handle WebXR setup
@@ -37,6 +38,7 @@ const ARView = () => {
   const navigate = useNavigate();
   const [pin, setPin] = useState<MapPin | null>(null);
   const [arSupported, setARSupported] = useState<boolean | null>(null);
+  const [viewMode, setViewMode] = useState<ARViewMode>(ARViewMode.HUMAN);
   
   useEffect(() => {
     // Check if WebXR/AR is supported
@@ -44,6 +46,11 @@ const ARView = () => {
     
     // Get the pin from location state
     const pinData = location.state?.pin as MapPin | undefined;
+    const mode = location.state?.viewMode as ARViewMode | undefined;
+    
+    if (mode) {
+      setViewMode(mode);
+    }
     
     if (!pinData) {
       toast.error("No Phillboard data found");
@@ -58,6 +65,10 @@ const ARView = () => {
     navigate('/');
   };
   
+  const toggleViewMode = () => {
+    setViewMode(viewMode === ARViewMode.HUMAN ? ARViewMode.BILLBOARD : ARViewMode.HUMAN);
+  };
+  
   // Early exit if WebXR is not supported
   if (arSupported === false) {
     return <UnsupportedARView onBack={handleBack} />;
@@ -69,8 +80,18 @@ const ARView = () => {
         <BackButton onClick={handleBack} />
       </div>
       
+      <div className="absolute top-4 right-4 z-10">
+        <Button 
+          variant="outline" 
+          className="bg-black/60 border-white/20 text-xs"
+          onClick={toggleViewMode}
+        >
+          {viewMode === ARViewMode.HUMAN ? "Switch to Billboard" : "Switch to Human"}
+        </Button>
+      </div>
+      
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-sm py-2 px-4 rounded-full text-sm text-white z-10">
-        {pin?.title || "Loading AR view..."}
+        {viewMode === ARViewMode.HUMAN ? "Human View" : "Billboard View"}: {pin?.title || "Loading AR view..."}
       </div>
       
       <div className="h-screen w-full">
@@ -80,8 +101,8 @@ const ARView = () => {
             gl.xr.enabled = true;
           }}
         >
-          <ARSetup />
-          <ARContent pin={pin} />
+          <ARSetup viewMode={viewMode} />
+          <ARContent pin={pin} viewMode={viewMode} />
         </Canvas>
         
         <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10">
