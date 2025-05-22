@@ -20,6 +20,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
 }) {
   const [tagline, setTagline] = useState("");
   const [selectedImage, setSelectedImage] = useState("1");
+  const [placementType, setPlacementType] = useState("human"); // Default to "human"
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
 
@@ -48,6 +49,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
         lat: locationToUse.lat,
         lng: locationToUse.lng,
         image_type: `image-${selectedImage}`,
+        placement_type: placementType, // Add placement type
         content: null
       };
       
@@ -66,6 +68,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
         username: newPhillboard.username,
         distance: "0 ft", // It's at the user's location
         image_type: newPhillboard.image_type,
+        placement_type: newPhillboard.placement_type, // Include placement type
         content: newPhillboard.content
       };
       
@@ -111,6 +114,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
         username: user?.email?.split('@')[0] || "Anonymous",
         distance: "0 ft",
         image_type: `image-${selectedImage}`,
+        placement_type: placementType, // Include placement type in fallback
       };
       
       onCreatePin(fallbackPin);
@@ -126,6 +130,8 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
     setTagline,
     selectedImage,
     setSelectedImage,
+    placementType,
+    setPlacementType,
     isSubmitting,
     handleCreatePhillboard
   };
