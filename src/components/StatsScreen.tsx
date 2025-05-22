@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { BarChart } from "@/components/ui/barChart";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -13,7 +12,7 @@ interface ChartDataItem {
 
 // Top phillboard structure
 interface TopPhillboard {
-  id: string; // Changed from number to string to match Supabase's UUID type
+  id: string;
   title: string;
   username: string;
   views: number;
@@ -79,8 +78,7 @@ export function StatsScreen() {
           value: daysCounts[index],
         }));
         
-        // Fetch top phillboards - in a real app you'd have a views counter
-        // For now, we'll get the most recently created ones
+        // Fetch top phillboards
         const { data: topData, error: topError } = await supabase
           .from('phillboards')
           .select('id, title, username')
@@ -115,18 +113,18 @@ export function StatsScreen() {
       
       <div className="space-y-6">
         {/* Global Stats */}
-        <div className="neon-card p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-3">Global Stats</h2>
-          <div className="grid grid-cols-2 gap-4">
+        <div className="neon-card p-4 rounded-lg border border-gray-800 bg-black/60">
+          <h2 className="text-lg font-semibold mb-4">Global Stats</h2>
+          <div className="grid grid-cols-2 gap-6">
             <div>
-              <p className="text-sm text-gray-400">Total Phillboards</p>
-              <p className="text-2xl font-bold text-neon-cyan">
-                {isLoading ? '...' : totalPhillboards.toLocaleString()}
+              <p className="text-sm text-gray-400 mb-1">Total Phillboards</p>
+              <p className="text-3xl font-bold text-cyan-400">
+                {isLoading ? '...' : totalPhillboards}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-400">Your Phillboards</p>
-              <p className="text-2xl font-bold text-neon-magenta">
+              <p className="text-sm text-gray-400 mb-1">Your Phillboards</p>
+              <p className="text-3xl font-bold text-fuchsia-500">
                 {isLoading ? '...' : userPhillboards}
               </p>
             </div>
@@ -134,7 +132,7 @@ export function StatsScreen() {
         </div>
         
         {/* Placements Chart */}
-        <div className="neon-card p-4 rounded-lg">
+        <div className="neon-card p-4 rounded-lg border border-gray-800 bg-black/60">
           <h2 className="text-lg font-semibold mb-3">Placements By Day of Week</h2>
           <div className="h-60 w-full">
             {isLoading ? (
@@ -154,14 +152,14 @@ export function StatsScreen() {
           </div>
         </div>
         
-        {/* Popular Phillboards */}
-        <div className="neon-card p-4 rounded-lg">
+        {/* Top Phillboards */}
+        <div className="neon-card p-4 rounded-lg border border-gray-800 bg-black/60">
           <h2 className="text-lg font-semibold mb-3">Top Phillboards</h2>
-          <div className="space-y-3">
-            {isLoading ? (
-              <p className="text-sm text-gray-400">Loading top phillboards...</p>
-            ) : (
-              topPhillboards.map((item, index) => (
+          {isLoading ? (
+            <p className="text-sm text-gray-400">Loading top phillboards...</p>
+          ) : topPhillboards.length > 0 ? (
+            <div className="space-y-3">
+              {topPhillboards.map((item, index) => (
                 <div key={item.id} className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-3 ${
@@ -181,12 +179,11 @@ export function StatsScreen() {
                     <p className="text-sm text-gray-400">views</p>
                   </div>
                 </div>
-              ))
-            )}
-            {!isLoading && topPhillboards.length === 0 && (
-              <p className="text-sm text-gray-400 italic">No phillboards found</p>
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm italic text-gray-400">No phillboards found</p>
+          )}
         </div>
       </div>
     </div>
