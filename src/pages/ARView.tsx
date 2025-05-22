@@ -15,10 +15,8 @@ import BackButton from "@/components/ar/BackButton";
 // Create XR state store for the XR component
 const xrState = createXRStore({
   // Default session options
-  defaultSessionOptions: {
-    requiredFeatures: ['hit-test', 'dom-overlay'],
-    domOverlay: { root: document.body }
-  }
+  requiredFeatures: ['hit-test', 'dom-overlay'],
+  domOverlay: { root: document.body }
 });
 
 /**
