@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin } from "./types";
@@ -16,8 +15,28 @@ export function PinPopup({ selectedPin, onClose }: PinPopupProps) {
   if (!selectedPin) return null;
   
   const handleViewInAR = () => {
-    toast.success(`Launching AR view for "${selectedPin.title}"`);
-    navigate('/ar-view', { state: { pin: selectedPin } });
+    // Check WebXR support first
+    if (!navigator.xr) {
+      toast.warning("Your browser doesn't support WebXR. Try using Chrome on a compatible Android device.");
+      return;
+    }
+    
+    navigator.xr.isSessionSupported('immersive-ar')
+      .then(supported => {
+        if (supported) {
+          toast.success(`Launching AR view for "${selectedPin.title}"`);
+          navigate('/ar-view', { state: { pin: selectedPin } });
+        } else {
+          toast.warning("Your device doesn't support AR sessions. We'll show a simulated view instead.");
+          navigate('/ar-view', { state: { pin: selectedPin } });
+        }
+      })
+      .catch(error => {
+        console.error("Error checking AR support:", error);
+        toast.warning("Could not verify AR support. Trying anyway...");
+        navigate('/ar-view', { state: { pin: selectedPin } });
+      });
+      
     onClose();
   };
   
@@ -44,17 +63,31 @@ export function PinPopup({ selectedPin, onClose }: PinPopupProps) {
             </div>
           </div>
           
-          <div className="bg-gray-800 rounded-md h-32 mb-4 flex items-center justify-center">
-            <div className="text-neon-cyan text-4xl">Aa</div>
-          </div>
+          {selectedPin.content ? (
+            <div className="bg-gray-800 rounded-md p-3 mb-4 text-center">
+              <p className="text-neon-cyan">{selectedPin.content}</p>
+            </div>
+          ) : (
+            <div className="bg-gray-800 rounded-md h-32 mb-4 flex items-center justify-center">
+              <div className="text-neon-cyan text-4xl">Aa</div>
+            </div>
+          )}
+          
+          <Button 
+            className="w-full mb-3 bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan flex items-center justify-center gap-2"
+            onClick={handleViewInAR}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 7v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path>
+              <path d="M9 17 5 21"></path>
+              <path d="m15 17 4 4"></path>
+              <circle cx="9.5" cy="9.5" r=".5"></circle>
+              <circle cx="14.5" cy="9.5" r=".5"></circle>
+            </svg>
+            View in AR
+          </Button>
           
           <div className="flex gap-2">
-            <Button 
-              className="flex-1 bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan"
-              onClick={handleViewInAR}
-            >
-              View in AR
-            </Button>
             <Button 
               className="flex-1 bg-neon-magenta/20 hover:bg-neon-magenta/30 text-white border border-neon-magenta"
               onClick={handleOverwrite}
@@ -62,16 +95,16 @@ export function PinPopup({ selectedPin, onClose }: PinPopupProps) {
             >
               Overwrite
             </Button>
+            <Button 
+              variant="ghost" 
+              className="flex-1"
+              onClick={onClose}
+            >
+              Close
+            </Button>
           </div>
-          <Button 
-            variant="ghost" 
-            className="w-full mt-2 text-sm"
-            onClick={onClose}
-          >
-            Close
-          </Button>
         </div>
       </Card>
     </div>
   );
-}
+};
