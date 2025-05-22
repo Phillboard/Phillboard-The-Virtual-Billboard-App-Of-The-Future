@@ -44,22 +44,39 @@ export function DummyDataButton() {
       const email = `${username}@phillboards.com`;
       const password = `Password123!${Math.floor(Math.random() * 999)}`;
       
-      // 2. Register new user
-      const { data: userData, error: signUpError } = await supabase.auth.signUp({
+      // 2. Register new user using admin api which doesn't trigger session change
+      const { data: authData, error: adminError } = await supabase.auth.admin.createUser({
         email,
         password,
-        options: {
-          data: { username }
-        }
+        email_confirm: true,
+        user_metadata: { username }
       });
       
-      if (signUpError) {
-        console.error("Error creating user:", signUpError);
-        toast.error(`Failed to create user: ${signUpError.message}`);
-        return;
+      if (adminError) {
+        // Fallback to regular signup if admin API fails (likely due to lack of admin rights)
+        console.log("Admin API failed, falling back to regular signup");
+        const { data: userData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username },
+            emailRedirectTo: window.location.origin,
+          }
+        });
+        
+        if (signUpError) {
+          console.error("Error creating user:", signUpError);
+          toast.error(`Failed to create user: ${signUpError.message}`);
+          return;
+        }
+        
+        // Use the user ID from the signup response
+        var userId = userData.user?.id;
+      } else {
+        // Use the user ID from the admin API response
+        var userId = authData.user.id;
       }
       
-      const userId = userData.user?.id;
       if (!userId) {
         toast.error("User creation failed - no user ID returned");
         return;
