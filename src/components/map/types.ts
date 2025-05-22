@@ -15,4 +15,5 @@ export interface MapPin {
   image_type?: string;
   content?: string;
   created_at?: string;
+  placement_type?: string;
 }
