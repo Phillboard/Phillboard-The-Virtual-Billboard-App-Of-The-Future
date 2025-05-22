@@ -69,6 +69,38 @@ export type Database = {
         }
         Relationships: []
       }
+      phillboards_edit_history: {
+        Row: {
+          cost: number
+          created_at: string
+          id: string
+          phillboard_id: string
+          user_id: string
+        }
+        Insert: {
+          cost: number
+          created_at?: string
+          id?: string
+          phillboard_id: string
+          user_id: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          id?: string
+          phillboard_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phillboards_edit_history_phillboard_id_fkey"
+            columns: ["phillboard_id"]
+            isOneToOne: false
+            referencedRelation: "phillboards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

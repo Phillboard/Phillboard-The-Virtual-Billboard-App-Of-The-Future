@@ -18,9 +18,9 @@ export const getEditCount = async (phillboardId: string | number) => {
   try {
     // Query for phillboard edit history
     const { data, error } = await supabase
-      .from("phillboards_edit_history")
-      .select("*")
-      .eq("phillboard_id", String(phillboardId));
+      .rpc('get_edit_count', { 
+        p_phillboard_id: String(phillboardId)
+      });
       
     if (error) {
       console.error("Error getting edit count:", error);
@@ -28,7 +28,7 @@ export const getEditCount = async (phillboardId: string | number) => {
     }
     
     // Return the count of edits
-    return data ? data.length : 0;
+    return data || 0;
   } catch (err) {
     console.error("Error getting edit count:", err);
     return 0; // Default to 0 if exception
@@ -154,13 +154,12 @@ export const recordEditHistory = async (
   editCost: number
 ) => {
   try {
+    // Instead of directly inserting, use a stored procedure
     const { data, error } = await supabase
-      .from("phillboards_edit_history")
-      .insert({
-        phillboard_id: String(phillboardId),
-        user_id: userId,
-        cost: editCost,
-        created_at: new Date().toISOString()
+      .rpc('record_edit_history', {
+        p_phillboard_id: String(phillboardId),
+        p_user_id: userId,
+        p_cost: editCost
       });
       
     if (error) {
