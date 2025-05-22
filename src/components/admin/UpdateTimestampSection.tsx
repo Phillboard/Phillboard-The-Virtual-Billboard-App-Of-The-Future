@@ -61,7 +61,7 @@ export function UpdateTimestampSection() {
       
       <Alert className="bg-black/30 border-neon-cyan/20 mb-4">
         <AlertDescription>
-          This will update the "Last Updated" timestamp shown to all users on the map.
+          This will update the "Last Updated" timestamp shown to all users in profile page.
         </AlertDescription>
       </Alert>
       
