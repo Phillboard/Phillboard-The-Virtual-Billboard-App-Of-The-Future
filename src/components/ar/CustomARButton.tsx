@@ -2,20 +2,24 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useXR } from "@react-three/xr";
+import { useXREvent, useXR } from "@react-three/xr";
 
 /**
  * Custom AR button component that uses @react-three/xr hooks to manage WebXR session
  */
 export const CustomARButton = () => {
-  const { isPresenting, enterAR, exitAR } = useXR();
+  const { isPresenting, sessionManager } = useXR();
   
   const handleARToggle = async () => {
     try {
       if (isPresenting) {
-        await exitAR();
+        await sessionManager.exitXR();
       } else {
-        await enterAR();
+        await sessionManager.enterXR('immersive-ar', {
+          requiredFeatures: ['hit-test'],
+          optionalFeatures: ['dom-overlay'],
+          domOverlay: { root: document.body }
+        });
         toast.success("AR session started");
       }
     } catch (err) {
