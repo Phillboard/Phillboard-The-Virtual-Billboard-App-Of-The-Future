@@ -13,7 +13,7 @@ export interface MapPin {
   username: string;
   distance: string;
   image_type?: string;
-  content?: string;
+  content?: string | null;
   created_at?: string;
   placement_type?: string;
 }

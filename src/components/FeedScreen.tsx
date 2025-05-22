@@ -107,6 +107,16 @@ export function FeedScreen() {
     return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
   };
 
+  // Get friendly placement type label
+  const getPlacementTypeLabel = (type?: string) => {
+    switch (type) {
+      case "human": return "Above human/object";
+      case "building": return "Above building";
+      case "billboard": return "Billboard size";
+      default: return "Standard placement";
+    }
+  };
+
   // Check if user can delete this phillboard
   const canDeletePhillboard = (phillboard: Phillboard) => {
     return isAdmin(user) || (user?.user_metadata?.username === phillboard.username);
@@ -172,6 +182,12 @@ export function FeedScreen() {
               <p className="text-sm text-gray-300 mb-2">
                 by <span className="text-fuchsia-500">@{phillboard.username}</span>
               </p>
+              
+              <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-800">
+                  {getPlacementTypeLabel(phillboard.placement_type)}
+                </span>
+              </div>
               
               {phillboard.image_type && phillboard.image_type !== 'text' && (
                 <div className="bg-gray-900 rounded h-24 flex items-center justify-center mb-2">

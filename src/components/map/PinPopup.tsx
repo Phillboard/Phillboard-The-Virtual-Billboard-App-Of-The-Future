@@ -1,165 +1,140 @@
-
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { MapPin } from "./types";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { DeletePinDialog } from "./dialogs/DeletePinDialog";
+import { format } from "date-fns";
+import {
+  Clock,
+  MapPin,
+  Pencil,
+  Trash,
+  User,
+  Home,
+  MonitorPlay,
+} from "lucide-react";
 import { EditPinDialog } from "./dialogs/EditPinDialog";
+import { DeletePinDialog } from "./dialogs/DeletePinDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trash2, Edit } from "lucide-react";
+import { MapPin as MapPinType } from "./types";
 
 interface PinPopupProps {
-  selectedPin: MapPin | null;
+  selectedPin: MapPinType | null;
   onClose: () => void;
-  onPinDelete?: () => void;
-  onPinUpdate?: (updatedPin: MapPin) => void;
+  onPinDelete: () => void;
+  onPinUpdate: (updatedPin: MapPinType) => void;
 }
 
-export function PinPopup({ selectedPin, onClose, onPinDelete, onPinUpdate }: PinPopupProps) {
-  const navigate = useNavigate();
-  const { user, isAdmin } = useAuth();
+export function PinPopup({ 
+  selectedPin, 
+  onClose,
+  onPinDelete,
+  onPinUpdate
+}: PinPopupProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { user, isAdmin } = useAuth();
   
   if (!selectedPin) return null;
-
-  // Check if user is the creator of the pin or an admin
-  const canEdit = isAdmin(user) || (user?.user_metadata?.username === selectedPin.username);
   
-  const handleViewInAR = () => {
-    // Check WebXR support first
-    if (!navigator.xr) {
-      toast.warning("Your browser doesn't support WebXR. Try using Chrome on a compatible Android device.");
-      return;
+  const formattedDate = selectedPin.created_at 
+    ? format(new Date(selectedPin.created_at), "MMM d, yyyy 'at' h:mm a") 
+    : "Unknown date";
+  
+  const canEdit = user && (user.email?.split('@')[0] === selectedPin.username || isAdmin(user));
+  
+  const getPlacementTypeLabel = (type?: string) => {
+    switch (type) {
+      case "human": return "Above human/object";
+      case "building": return "Above building";
+      case "billboard": return "Billboard size";
+      default: return "Standard placement";
     }
-    
-    navigator.xr.isSessionSupported('immersive-ar')
-      .then(supported => {
-        if (supported) {
-          toast.success(`Launching AR view for "${selectedPin.title}"`);
-          navigate('/ar-view', { state: { pin: selectedPin } });
-        } else {
-          toast.warning("Your device doesn't support AR sessions. We'll show a simulated view instead.");
-          navigate('/ar-view', { state: { pin: selectedPin } });
-        }
-      })
-      .catch(error => {
-        console.error("Error checking AR support:", error);
-        toast.warning("Could not verify AR support. Trying anyway...");
-        navigate('/ar-view', { state: { pin: selectedPin } });
-      });
-      
-    onClose();
-  };
-  
-  const handleDeleteClick = () => {
-    setIsDeleteDialogOpen(true);
-  };
-  
-  const handleEditClick = () => {
-    setIsEditDialogOpen(true);
-  };
-  
-  const handleDeleteSuccess = () => {
-    if (onPinDelete) onPinDelete();
-    onClose();
   };
 
-  const handleUpdateSuccess = (updatedPin: MapPin) => {
-    if (onPinUpdate) onPinUpdate(updatedPin);
+  const getPlacementIcon = (type?: string) => {
+    switch (type) {
+      case "human": return <User size={14} />;
+      case "building": return <Home size={14} />;
+      case "billboard": return <MonitorPlay size={14} />;
+      default: return <MapPin size={14} />;
+    }
   };
   
   return (
-    <>
-      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md z-20 animate-fade-in">
-        <Card className="neon-card">
-          <div className="p-4">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h3 className="text-lg font-semibold">{selectedPin.title}</h3>
-                <p className="text-sm text-gray-400">by @{selectedPin.username}</p>
-              </div>
-              <div className="flex items-center text-sm text-neon-cyan">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-                {selectedPin.distance}
-              </div>
-            </div>
-            
-            {selectedPin.content ? (
-              <div className="bg-gray-800 rounded-md p-3 mb-4 text-center">
-                <p className="text-neon-cyan">{selectedPin.content}</p>
-              </div>
-            ) : (
-              <div className="bg-gray-800 rounded-md h-32 mb-4 flex items-center justify-center">
-                <div className="text-neon-cyan text-4xl">Aa</div>
-              </div>
-            )}
-            
-            <Button 
-              className="w-full mb-3 bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan flex items-center justify-center gap-2"
-              onClick={handleViewInAR}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 7v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path>
-                <path d="M9 17 5 21"></path>
-                <path d="m15 17 4 4"></path>
-                <circle cx="9.5" cy="9.5" r=".5"></circle>
-                <circle cx="14.5" cy="9.5" r=".5"></circle>
-              </svg>
-              View in AR
-            </Button>
-            
-            <div className="flex gap-2">
-              {canEdit && (
-                <>
-                  <Button 
-                    className="flex-1 bg-blue-900/20 hover:bg-blue-900/30 text-white border border-blue-500"
-                    onClick={handleEditClick}
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                  </Button>
-
-                  <Button 
-                    className="flex-1 bg-red-900/20 hover:bg-red-900/30 text-white border border-red-500"
-                    onClick={handleDeleteClick}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </Button>
-                </>
-              )}
-              
-              <Button 
-                variant="ghost" 
-                className={canEdit ? "flex-1" : "w-full"}
-                onClick={onClose}
-              >
-                Close
-              </Button>
-            </div>
+    <Dialog open={!!selectedPin} onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-sm bg-black/90 border-white/10">
+        <DialogHeader>
+          <DialogTitle className="text-cyan-400">{selectedPin.title}</DialogTitle>
+          <DialogDescription>
+            Placed by <span className="text-fuchsia-500">@{selectedPin.username}</span>
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-3 py-2">
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <Clock size={14} />
+            <span>{formattedDate}</span>
           </div>
-        </Card>
-      </div>
+          
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <MapPin size={14} />
+            <span>{selectedPin.distance} away</span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            {getPlacementIcon(selectedPin.placement_type)}
+            <span>{getPlacementTypeLabel(selectedPin.placement_type)}</span>
+          </div>
+          
+          {selectedPin.content && (
+            <div className="mt-2 p-3 bg-gray-900/50 rounded-md">
+              <p className="text-sm italic text-gray-300">
+                "{selectedPin.content}"
+              </p>
+            </div>
+          )}
+        </div>
+        
+        {canEdit && (
+          <div className="flex gap-2 justify-end">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsEditDialogOpen(true)}
+            >
+              <Pencil size={16} className="mr-1" />
+              Edit
+            </Button>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash size={16} className="mr-1" />
+              Delete
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+      
+      <EditPinDialog 
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        selectedPin={selectedPin}
+        onUpdatePin={onPinUpdate}
+      />
       
       <DeletePinDialog 
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         selectedPin={selectedPin}
-        onDeleteSuccess={handleDeleteSuccess}
+        onDeleteSuccess={onPinDelete}
       />
-
-      <EditPinDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        selectedPin={selectedPin}
-        onUpdatePin={handleUpdateSuccess}
-      />
-    </>
+    </Dialog>
   );
-};
+}

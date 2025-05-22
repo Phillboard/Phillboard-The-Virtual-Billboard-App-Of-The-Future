@@ -21,6 +21,16 @@ export function usePhillboardEdit({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
 
+  // Function to map selected image to placement type
+  const getPlacementType = (imageSelection: string) => {
+    switch (imageSelection) {
+      case "1": return "human";
+      case "2": return "building";
+      case "3": return "billboard";
+      default: return "human";
+    }
+  };
+
   const handleUpdatePhillboard = async () => {
     if (!tagline) {
       toast.error("Please enter a tagline for your phillboard");
@@ -39,6 +49,9 @@ export function usePhillboardEdit({
         return;
       }
 
+      // Get placement type from selected image
+      const placementType = getPlacementType(selectedImage);
+
       // Update the phillboard in the database
       // Convert id to string if it's a number to ensure compatibility with supabase
       const phillboardId = typeof phillboard.id === 'number' ? String(phillboard.id) : phillboard.id;
@@ -48,6 +61,7 @@ export function usePhillboardEdit({
         .update({
           title: tagline,
           image_type: `image-${selectedImage}`,
+          placement_type: placementType,
         })
         .eq("id", phillboardId)
         .select();
@@ -68,6 +82,7 @@ export function usePhillboardEdit({
         ...phillboard,
         title: tagline,
         image_type: `image-${selectedImage}`,
+        placement_type: placementType,
       };
 
       onUpdatePin(updatedPin);

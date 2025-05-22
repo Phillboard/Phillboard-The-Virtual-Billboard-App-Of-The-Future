@@ -38,6 +38,7 @@ export type Database = {
           image_type: string | null
           lat: number
           lng: number
+          placement_type: string | null
           title: string
           user_id: string | null
           username: string
@@ -49,6 +50,7 @@ export type Database = {
           image_type?: string | null
           lat: number
           lng: number
+          placement_type?: string | null
           title: string
           user_id?: string | null
           username: string
@@ -60,6 +62,7 @@ export type Database = {
           image_type?: string | null
           lat?: number
           lng?: number
+          placement_type?: string | null
           title?: string
           user_id?: string | null
           username?: string
