@@ -6,7 +6,6 @@ import { DialogActions } from "./DialogActions";
 import { usePhillboardEdit } from "./hooks/usePhillboardEdit";
 import { MapPin } from "../types";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 
 interface EditPinDialogProps {
   isOpen: boolean;
