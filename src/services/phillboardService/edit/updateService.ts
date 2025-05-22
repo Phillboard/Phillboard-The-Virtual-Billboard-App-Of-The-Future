@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { PhillboardUpdateData } from "./types";
+import { handleServiceError } from "./errorHandling";
 
 /**
  * Update phillboard in the database
@@ -23,8 +24,7 @@ export const updatePhillboardInDatabase = async (
       .single();
 
     if (error) {
-      console.error("Error updating phillboard:", error);
-      throw new Error(`Failed to update phillboard: ${error.message}`);
+      throw handleServiceError(error, `Failed to update phillboard`);
     }
     
     if (!data) {
@@ -34,7 +34,6 @@ export const updatePhillboardInDatabase = async (
     console.log("Phillboard update successful:", data);
     return data;
   } catch (error) {
-    console.error("Exception updating phillboard:", error);
-    throw error;
+    throw handleServiceError(error, "Exception updating phillboard");
   }
 };

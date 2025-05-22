@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { handleServiceError } from "./errorHandling";
 
 /**
  * Get the edit count for a phillboard
@@ -39,8 +40,7 @@ export const calculateEditCost = async (phillboardId: string | number, userId: s
     console.log(`Edit cost for phillboard ${phillboardId}: $${cost} (${editCount} previous edits)`);
     return cost;
   } catch (err) {
-    console.error("Error calculating edit cost:", err);
-    throw new Error("Failed to calculate edit cost");
+    throw handleServiceError(err, "Failed to calculate edit cost");
   }
 };
 

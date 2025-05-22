@@ -1,11 +1,11 @@
 
-import { toast } from "sonner";
 import { PhillboardUpdateData, EditPhillboardResult } from "./types";
 import { calculateEditCost } from "./editCountService";
 import { processEditPayment, payOriginalCreator } from "./paymentService";
 import { recordEditHistory } from "./editCountService";
 import { updatePhillboardInDatabase } from "./updateService";
 import { getPlacementType } from "./placementUtils";
+import { handleServiceError } from "./errorHandling";
 
 // Re-export all functions for backward compatibility
 export * from "./placementUtils";
@@ -13,6 +13,7 @@ export * from "./editCountService";
 export * from "./paymentService";
 export * from "./updateService";
 export * from "./types";
+export * from "./errorHandling";
 
 /**
  * Handle the entire phillboard edit process
@@ -46,17 +47,15 @@ export const editPhillboard = async (
       message: paymentResult.message
     };
   } catch (error) {
-    // Propagate the error to be handled by the caller
-    if (error instanceof Error) {
-      return {
-        success: false,
-        message: error.message,
-        error
-      };
-    }
+    // Use our centralized error handler
+    const handledError = handleServiceError(
+      error, 
+      "An error occurred while editing the phillboard"
+    );
+    
     return {
       success: false,
-      message: "An unknown error occurred",
+      message: handledError.message,
       error
     };
   }

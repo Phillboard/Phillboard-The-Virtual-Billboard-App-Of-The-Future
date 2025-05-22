@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { EditPaymentResult } from "./types";
+import { handleServiceError } from "./errorHandling";
 
 /**
  * Process payment for editing a phillboard
@@ -13,56 +14,57 @@ export const processEditPayment = async (
 ): Promise<EditPaymentResult> => {
   console.log(`Processing payment of $${editCost} from user ${userId} for phillboard ${phillboardId}`);
   
-  // Get user's current balance
-  const { data: userBalance, error: balanceError } = await supabase
-    .from('user_balances')
-    .select('balance')
-    .eq('id', userId)
-    .single();
+  try {
+    // Get user's current balance
+    const { data: userBalance, error: balanceError } = await supabase
+      .from('user_balances')
+      .select('balance')
+      .eq('id', userId)
+      .single();
+      
+    if (balanceError) {
+      throw handleServiceError(balanceError, "Failed to check your balance. Please try again.");
+    }
     
-  if (balanceError) {
-    console.error("Error getting user balance:", balanceError);
-    throw new Error("Failed to check your balance. Please try again.");
-  }
-  
-  // Check if user has enough balance
-  if (!userBalance || userBalance.balance < editCost) {
-    throw new Error(`Insufficient funds. You need $${editCost.toFixed(2)} to edit this phillboard.`);
-  }
-  
-  console.log(`User has sufficient balance: $${userBalance.balance}. Deducting $${editCost}`);
-  
-  // Update user's balance (deduct the cost)
-  const { error: updateError } = await supabase
-    .from('user_balances')
-    .update({ 
-      balance: userBalance.balance - editCost,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', userId);
+    // Check if user has enough balance
+    if (!userBalance || userBalance.balance < editCost) {
+      throw new Error(`Insufficient funds. You need $${editCost.toFixed(2)} to edit this phillboard.`);
+    }
     
-  if (updateError) {
-    console.error("Error updating balance:", updateError);
-    throw new Error("Payment processing error. Please try again.");
-  }
-  
-  // Get the original creator from the database
-  const { data: originalPhillboard, error: phillboardError } = await supabase
-    .from("phillboards")
-    .select("user_id")
-    .eq("id", String(phillboardId))
-    .single();
+    console.log(`User has sufficient balance: $${userBalance.balance}. Deducting $${editCost}`);
     
-  if (phillboardError) {
-    console.error("Error getting original creator:", phillboardError);
-    throw new Error("Failed to get phillboard details.");
+    // Update user's balance (deduct the cost)
+    const { error: updateError } = await supabase
+      .from('user_balances')
+      .update({ 
+        balance: userBalance.balance - editCost,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+      
+    if (updateError) {
+      throw handleServiceError(updateError, "Payment processing error. Please try again.");
+    }
+    
+    // Get the original creator from the database
+    const { data: originalPhillboard, error: phillboardError } = await supabase
+      .from("phillboards")
+      .select("user_id")
+      .eq("id", String(phillboardId))
+      .single();
+      
+    if (phillboardError) {
+      throw handleServiceError(phillboardError, "Failed to get phillboard details.");
+    }
+    
+    return {
+      success: true,
+      originalCreatorId: originalPhillboard?.user_id,
+      message: `Edited phillboard for $${editCost.toFixed(2)}`
+    };
+  } catch (error) {
+    throw handleServiceError(error, "Payment processing failed");
   }
-  
-  return {
-    success: true,
-    originalCreatorId: originalPhillboard?.user_id,
-    message: `Edited phillboard for $${editCost.toFixed(2)}`
-  };
 };
 
 /**
