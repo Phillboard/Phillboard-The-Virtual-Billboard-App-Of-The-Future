@@ -31,6 +31,27 @@ export function UpdateTimestampSection() {
     };
     
     fetchLastUpdate();
+
+    // Set up real-time subscription for updates
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', 
+        {
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'app_settings'
+        }, 
+        (payload) => {
+          if (payload.new && payload.new.last_update_time) {
+            setLastUpdate(new Date(payload.new.last_update_time));
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const updateTimestamp = async () => {
