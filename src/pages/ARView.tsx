@@ -1,8 +1,8 @@
 
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import 'webxr-polyfill';
 import { Canvas } from "@react-three/fiber";
-import { XR, createXRState } from "@react-three/xr";
 import { Environment } from "@react-three/drei";
 import { toast } from "sonner";
 import { MapPin } from "@/components/map/types";
@@ -12,8 +12,22 @@ import CustomARButton from "@/components/ar/CustomARButton";
 import UnsupportedARView from "@/components/ar/UnsupportedARView";
 import BackButton from "@/components/ar/BackButton";
 
-// Create XR state store for the XR component
-const xrState = createXRState();
+/**
+ * Set up WebXR context within the Canvas
+ */
+function ARSetup() {
+  const [isHitTestReady, setIsHitTestReady] = useState(false);
+  
+  // Component to handle WebXR setup
+  return (
+    <>
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} />
+      <Environment preset="city" />
+      <CustomARButton />
+    </>
+  );
+}
 
 /**
  * Main AR view page component
@@ -60,20 +74,14 @@ const ARView = () => {
       </div>
       
       <div className="h-screen w-full">
-        <Canvas>
-          <XR
-            store={xrState}
-            sessionInit={{
-              requiredFeatures: ['hit-test','dom-overlay'],
-              domOverlay: { root: document.body as HTMLElement }
-            }}
-          >
-            <ambientLight intensity={0.5} />
-            <pointLight position={[10, 10, 10]} />
-            <Environment preset="city" />
-            
-            <ARContent pin={pin} />
-          </XR>
+        <Canvas
+          onCreated={({ gl }) => {
+            // Enable WebXR and set up
+            gl.xr.enabled = true;
+          }}
+        >
+          <ARSetup />
+          <ARContent pin={pin} />
         </Canvas>
         
         <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10">
@@ -81,8 +89,6 @@ const ARView = () => {
             <div className="bg-black/40 text-white/50 border border-white/10 py-2 px-4 rounded-md">
               Checking AR Support...
             </div>
-          ) : arSupported === true ? (
-            <CustomARButton />
           ) : null}
         </div>
       </div>
