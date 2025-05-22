@@ -4,7 +4,26 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { Text } from "@react-three/drei";
+import { Text, Environment } from "@react-three/drei";
+import { checkARSupport } from "@/utils/arUtils";
+import { useNavigate } from "react-router-dom";
+
+// AR Scene Component
+function ARScene() {
+  const [placePosition, setPlacePosition] = useState<THREE.Vector3 | null>(null);
+  
+  return (
+    <>
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} />
+      <Environment preset="city" />
+      
+      {/* Default Phillboards */}
+      <PhillboardObject position={[0, 0, -1]} text="Tech Hub" username="NeonRider" />
+      <PhillboardObject position={[1, 0.5, -2]} text="Future Now" username="DigitalNomad" />
+    </>
+  );
+}
 
 // Phillboard Object Component
 function PhillboardObject({ position, text, username = "User" }: { 
@@ -44,23 +63,46 @@ function PhillboardObject({ position, text, username = "User" }: {
   );
 }
 
-// AR Scene Component
-function ARScene() {
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
+// WebXR Button Component
+function WebXRButton() {
+  const navigate = useNavigate();
+  const handleLaunchAR = async () => {
+    try {
+      // Check if WebXR is supported
+      const isSupported = await checkARSupport();
       
-      {/* Default Phillboards */}
-      <PhillboardObject position={[0, 0, -1]} text="Tech Hub" username="NeonRider" />
-      <PhillboardObject position={[1, 0.5, -2]} text="Future Now" username="DigitalNomad" />
-    </>
+      if (isSupported) {
+        toast.success("Launching AR experience");
+        // Navigate to the dedicated AR view
+        navigate('/ar-view');
+      } else {
+        toast.warning("AR not supported on your device");
+      }
+    } catch (error) {
+      console.error("Error launching AR:", error);
+      toast.error("Failed to launch AR experience");
+    }
+  };
+
+  return (
+    <Button 
+      className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
+      onClick={handleLaunchAR}
+    >
+      Launch AR Experience
+    </Button>
   );
 }
 
 // Main ARScreen Component
 export function ARScreen() {
   const [showPlacement, setShowPlacement] = useState(false);
+  const [arSupported, setARSupported] = useState<boolean | null>(null);
+  
+  // Check AR support on component mount
+  useState(() => {
+    checkARSupport().then(setARSupported);
+  });
   
   const handleCancel = () => {
     setShowPlacement(false);
@@ -79,19 +121,32 @@ export function ARScreen() {
           <ARScene />
         </Canvas>
         
-        {/* AR Instructions Overlay */}
+        {/* AR Info Overlay */}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-sm py-2 px-4 rounded-full text-sm text-white z-10">
-          AR view (simulated)
+          AR Preview
         </div>
         
-        {/* AR Button */}
-        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10">
-          <Button 
-            className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
-            onClick={handlePlacePhillboard}
-          >
-            Place Phillboard
-          </Button>
+        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10 space-y-4">
+          {arSupported === null ? (
+            <div className="bg-black/40 text-white/50 border border-white/10 py-2 px-4 rounded-md">
+              Checking AR Support...
+            </div>
+          ) : arSupported ? (
+            <div className="flex flex-col gap-4">
+              <WebXRButton />
+              <Button 
+                className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan"
+                onClick={handlePlacePhillboard}
+              >
+                Place Phillboard
+              </Button>
+            </div>
+          ) : (
+            <div className="bg-black/60 text-red-400 border border-red-900 py-2 px-4 rounded-md text-center">
+              AR not supported on this device.<br/>
+              <span className="text-xs text-white/50">Try Chrome on Android</span>
+            </div>
+          )}
         </div>
         
         {/* Placement UI */}
