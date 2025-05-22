@@ -13,12 +13,7 @@ import UnsupportedARView from "@/components/ar/UnsupportedARView";
 import BackButton from "@/components/ar/BackButton";
 
 // Create XR state store for the XR component
-const xrState = createXRStore({
-  // Set required features
-  requiredFeatures: ['hit-test', 'dom-overlay'],
-  // For domOverlay, specify the root DOM element
-  domOverlay: { root: document.body } as any
-});
+const xrState = createXRStore();
 
 /**
  * Main AR view page component
@@ -66,7 +61,13 @@ const ARView = () => {
       
       <div className="h-screen w-full">
         <Canvas>
-          <XR store={xrState}>
+          <XR 
+            referenceSpace="local-floor"
+            sessionInit={{ 
+              requiredFeatures: ['hit-test', 'dom-overlay'],
+              domOverlay: { root: document.body } as any
+            }}
+          >
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <Environment preset="city" />
