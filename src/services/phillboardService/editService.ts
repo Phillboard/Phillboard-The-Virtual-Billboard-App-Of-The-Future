@@ -13,23 +13,35 @@ export const getPlacementType = (imageSelection: string) => {
   }
 };
 
+// Get the edit count for a phillboard
+export const getEditCount = async (phillboardId: string | number) => {
+  try {
+    // Query for phillboard edit history
+    const { data, error } = await supabase
+      .from("phillboards_edit_history")
+      .select("*")
+      .eq("phillboard_id", String(phillboardId));
+      
+    if (error) {
+      console.error("Error getting edit count:", error);
+      return 0; // Default to 0 if error
+    }
+    
+    // Return the count of edits
+    return data ? data.length : 0;
+  } catch (err) {
+    console.error("Error getting edit count:", err);
+    return 0; // Default to 0 if exception
+  }
+};
+
 // Calculate cost of editing a phillboard
 export const calculateEditCost = async (phillboardId: string | number, userId: string) => {
   try {
-    // Get the edit count for this phillboard (each edit doubles the cost)
-    const { data: editHistory, error } = await supabase
-      .from("phillboards")
-      .select("created_at")
-      .eq("id", String(phillboardId))
-      .order("created_at", { ascending: false });
-      
-    if (error) {
-      console.error("Error calculating edit cost:", error);
-      throw new Error("Failed to calculate edit cost");
-    }
+    // Get the edit count for this phillboard
+    const editCount = await getEditCount(phillboardId);
     
     // Base cost is $1, double for each previous edit
-    const editCount = editHistory ? editHistory.length : 0;
     const cost = Math.pow(2, editCount);
     
     console.log(`Edit cost for phillboard ${phillboardId}: $${cost} (${editCount} previous edits)`);
@@ -112,6 +124,7 @@ export const payOriginalCreator = async (originalCreatorId: string, userId: stri
   try {
     console.log(`Paying original creator ${originalCreatorId} share of $${creatorShare}`);
     
+    // Use the add_to_balance database function to add funds safely
     const { data, error: creatorUpdateError } = await supabase
       .rpc('add_to_balance', { 
         user_id: originalCreatorId, 
@@ -134,6 +147,37 @@ export const payOriginalCreator = async (originalCreatorId: string, userId: stri
   }
 };
 
+// Record this edit in phillboards_edit_history
+export const recordEditHistory = async (
+  phillboardId: string | number,
+  userId: string,
+  editCost: number
+) => {
+  try {
+    const { data, error } = await supabase
+      .from("phillboards_edit_history")
+      .insert({
+        phillboard_id: String(phillboardId),
+        user_id: userId,
+        cost: editCost,
+        created_at: new Date().toISOString()
+      });
+      
+    if (error) {
+      console.error("Error recording edit history:", error);
+      // Don't throw here, just log the error since this is non-critical
+    } else {
+      console.log("Edit history recorded successfully");
+    }
+    
+    return { success: true };
+  } catch (err) {
+    console.error("Exception recording edit history:", err);
+    // Don't throw here, just log the error since this is non-critical
+    return { success: false, error: err };
+  }
+};
+
 // Update phillboard in the database
 export const updatePhillboardInDatabase = async (
   phillboardId: string | number,
@@ -148,6 +192,7 @@ export const updatePhillboardInDatabase = async (
   console.log(`Updating phillboard ${idString} with:`, updates);
   
   try {
+    // Use select() followed by single() for proper error handling
     const { data, error } = await supabase
       .from("phillboards")
       .update(updates)
@@ -188,6 +233,9 @@ export const editPhillboard = async (
     
     // Process the payment
     const paymentResult = await processEditPayment(editCost, userId, phillboardId);
+    
+    // Record this edit in history
+    await recordEditHistory(phillboardId, userId, editCost);
     
     // Pay the original creator if applicable
     if (paymentResult.originalCreatorId) {

@@ -7,5 +7,6 @@ export { getUserBalance, getUserTransactions } from './balanceService';
 export { 
   editPhillboard, 
   getPlacementType, 
-  calculateEditCost 
+  calculateEditCost,
+  getEditCount
 } from './editService';

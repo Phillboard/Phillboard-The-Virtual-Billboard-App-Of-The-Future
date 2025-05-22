@@ -6,7 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { 
   editPhillboard, 
   getPlacementType, 
-  calculateEditCost 
+  calculateEditCost,
+  getEditCount 
 } from "@/services/phillboardService";
 
 export function usePhillboardEdit({
@@ -24,14 +25,20 @@ export function usePhillboardEdit({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editCost, setEditCost] = useState<number | null>(null);
+  const [editCount, setEditCount] = useState<number>(0);
   const { user } = useAuth();
   
-  // Calculate the cost of editing this phillboard
+  // Calculate the cost of editing this phillboard and get edit count
   useEffect(() => {
-    const fetchEditCost = async () => {
+    const fetchEditData = async () => {
       if (!user) return;
       
       try {
+        // Get edit count
+        const count = await getEditCount(phillboard.id);
+        setEditCount(count);
+        
+        // Calculate cost based on count
         const cost = await calculateEditCost(phillboard.id, user.id);
         setEditCost(cost);
       } catch (error) {
@@ -40,7 +47,7 @@ export function usePhillboardEdit({
       }
     };
     
-    fetchEditCost();
+    fetchEditData();
   }, [phillboard.id, user]);
 
   const handleUpdatePhillboard = async () => {
@@ -99,6 +106,7 @@ export function usePhillboardEdit({
     setSelectedImage,
     isSubmitting,
     handleUpdatePhillboard,
-    editCost
+    editCost,
+    editCount
   };
 }

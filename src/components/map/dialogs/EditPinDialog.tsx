@@ -29,7 +29,8 @@ export function EditPinDialog({
     setSelectedImage,
     isSubmitting,
     handleUpdatePhillboard,
-    editCost
+    editCost,
+    editCount
   } = usePhillboardEdit({ 
     phillboard: selectedPin,
     onClose: () => onOpenChange(false),
@@ -61,7 +62,10 @@ export function EditPinDialog({
                 <span className="text-lg font-medium text-neon-cyan">${editCost.toFixed(2)}</span>
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                Cost doubles with each edit. Original creators earn 50% when others edit.
+                This phillboard has been edited {editCount} time(s). Cost doubles with each edit.
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Original creators earn 50% when others edit.
               </p>
             </div>
           )}
