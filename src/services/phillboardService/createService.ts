@@ -59,7 +59,11 @@ async function processPhillboardTransaction(
       .eq('id', userId)
       .single();
       
-    if (balanceError) throw balanceError;
+    if (balanceError) {
+      console.error("Error getting user balance:", balanceError);
+      toast.error("Failed to check your balance. Please try again.");
+      return false;
+    }
     
     if (!userBalance || userBalance.balance < cost) {
       toast.error(`Insufficient funds. You need $${cost.toFixed(2)} to place this phillboard.`);
@@ -75,7 +79,11 @@ async function processPhillboardTransaction(
       })
       .eq('id', userId);
       
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error("Error updating user balance:", updateError);
+      toast.error("Payment processing error. Please try again.");
+      return false;
+    }
     
     console.log(`Deducted $${cost} from user ${userId}'s balance`);
     
@@ -85,7 +93,7 @@ async function processPhillboardTransaction(
       
       console.log(`Attempting to pay $${creatorShare} to creator ${originalCreatorId}`);
       
-      const { error: creatorUpdateError } = await supabase
+      const { data, error: creatorUpdateError } = await supabase
         .rpc('add_to_balance', { 
           user_id: originalCreatorId, 
           amount: creatorShare 

@@ -87,7 +87,12 @@ export function usePhillboardEdit({
           .eq('id', session.user.id)
           .single();
           
-        if (balanceError) throw balanceError;
+        if (balanceError) {
+          console.error("Error getting user balance:", balanceError);
+          toast.error("Failed to check your balance. Please try again.");
+          setIsSubmitting(false);
+          return;
+        }
         
         // Check if user has enough balance
         if (!userBalance || userBalance.balance < editCost) {
@@ -105,6 +110,7 @@ export function usePhillboardEdit({
           
         if (phillboardError) {
           console.error("Error getting original creator:", phillboardError);
+          toast.error("Failed to get phillboard details. Please try again.");
           setIsSubmitting(false);
           return;
         }
@@ -118,7 +124,12 @@ export function usePhillboardEdit({
           })
           .eq('id', session.user.id);
           
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Error updating balance:", updateError);
+          toast.error("Payment processing error. Please try again.");
+          setIsSubmitting(false);
+          return;
+        }
         
         // Let the user know the cost
         toast.success(`Edited phillboard for $${editCost.toFixed(2)}`);
@@ -129,7 +140,7 @@ export function usePhillboardEdit({
             originalPhillboard.user_id !== session.user.id) {
           const creatorShare = editCost * 0.5;
           
-          const { error: creatorUpdateError } = await supabase
+          const { data, error: creatorUpdateError } = await supabase
             .rpc('add_to_balance', { 
               user_id: originalPhillboard.user_id, 
               amount: creatorShare 
@@ -139,6 +150,7 @@ export function usePhillboardEdit({
             console.error("Error paying original creator:", creatorUpdateError);
             toast.error("Failed to pay original creator, but your edit was successful.");
           } else {
+            console.log("Original creator payment successful:", data);
             toast.info(`The original creator earned $${creatorShare.toFixed(2)} from your edit.`);
           }
         }
@@ -164,11 +176,13 @@ export function usePhillboardEdit({
       if (error) {
         console.error("Error updating phillboard:", error);
         toast.error("Failed to update phillboard. You may not have permission to edit this phillboard.");
+        setIsSubmitting(false);
         return;
       }
 
       if (!data || data.length === 0) {
         toast.error("Failed to update phillboard");
+        setIsSubmitting(false);
         return;
       }
 
@@ -186,7 +200,6 @@ export function usePhillboardEdit({
     } catch (error) {
       console.error("Error updating phillboard:", error);
       toast.error("Failed to update phillboard. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
