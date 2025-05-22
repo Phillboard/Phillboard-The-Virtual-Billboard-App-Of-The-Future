@@ -8,6 +8,7 @@ import { UserProfileCard } from "./profile/UserProfileCard";
 import { UserPhillboardsList } from "./profile/UserPhillboardsList";
 import { UserSettings } from "./profile/UserSettings";
 import { EditProfileDialog } from "./profile/EditProfileDialog";
+import { UserBalance } from "./profile/UserBalance";
 import { Phillboard } from "./profile/types";
 
 export function ProfileScreen() {
@@ -90,6 +91,9 @@ export function ProfileScreen() {
       <LastUpdateBanner />
       
       <div className="space-y-6 mt-8">
+        {/* User Balance */}
+        <UserBalance />
+        
         <UserProfileCard 
           displayName={displayName}
           username={username || user?.user_metadata?.username || "user"}
