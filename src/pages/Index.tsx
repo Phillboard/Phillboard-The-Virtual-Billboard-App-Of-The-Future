@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { SplashScreen } from "@/components/SplashScreen";
-import { PermissionsPrompt } from "@/components/PermissionsPrompt";
 import { Navigation } from "@/components/Navigation";
 import { MapScreen } from "@/components/MapScreen";
 import { ARScreen } from "@/components/ARScreen";
@@ -12,15 +11,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 
 const Index = () => {
-  const [appState, setAppState] = useState<"splash" | "permissions" | "main">("splash");
+  const [appState, setAppState] = useState<"splash" | "main">("splash");
   const [activeTab, setActiveTab] = useState<string>("map");
   const { user, loading } = useAuth();
   
   const handleSplashComplete = () => {
-    setAppState("permissions");
-  };
-  
-  const handlePermissionsComplete = () => {
     setAppState("main");
   };
   
@@ -38,12 +33,6 @@ const Index = () => {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {appState === "splash" && (
         <SplashScreen onComplete={handleSplashComplete} />
-      )}
-      
-      {appState === "permissions" && (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black via-gray-900 to-black">
-          <PermissionsPrompt onComplete={handlePermissionsComplete} />
-        </div>
       )}
       
       {appState === "main" && (
