@@ -42,7 +42,7 @@ export function usePhillboardEdit({
         const { data: editHistory, error } = await supabase
           .from("phillboards")
           .select("created_at")
-          .eq("id", phillboard.id)
+          .eq("id", String(phillboard.id))
           .order("created_at", { ascending: false });
           
         if (error) throw error;
@@ -111,12 +111,21 @@ export function usePhillboardEdit({
         toast.info(`Edited phillboard for $${editCost.toFixed(2)}`);
         
         // If the user is not the original creator, give them 50% of the edit cost
-        if (phillboard.user_id && phillboard.user_id !== session.user.id) {
+        // First we need to get the original creator from the database
+        const { data: originalPhillboard, error: phillboardError } = await supabase
+          .from("phillboards")
+          .select("user_id")
+          .eq("id", String(phillboard.id))
+          .single();
+        
+        if (!phillboardError && originalPhillboard && 
+            originalPhillboard.user_id && 
+            originalPhillboard.user_id !== session.user.id) {
           const creatorShare = editCost * 0.5;
           
           const { error: creatorUpdateError } = await supabase
             .rpc('add_to_balance', { 
-              user_id: phillboard.user_id, 
+              user_id: originalPhillboard.user_id, 
               amount: creatorShare 
             });
             
