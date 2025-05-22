@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Feed } from "lucide-react";
+import { Rss } from "lucide-react";
 
 type Tab = {
   id: string;
@@ -23,7 +23,7 @@ const tabs: Tab[] = [
   {
     id: "feed",
     name: "Feed",
-    icon: <Feed className="nav-icon" />,
+    icon: <Rss className="nav-icon" />,
   },
   {
     id: "ar",
