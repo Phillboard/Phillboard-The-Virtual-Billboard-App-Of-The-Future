@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -7,17 +8,17 @@ import { useXR } from "@react-three/xr";
  * Custom AR button component that uses @react-three/xr hooks to manage WebXR session
  */
 export const CustomARButton = () => {
-  const xr = useXR();
+  const { session } = useXR();
   
   const handleARToggle = async () => {
     try {
-      if (xr.session) {
+      if (session) {
         // If there's an active session, exit it
-        xr.session.end();
+        session.end();
       } else {
         // Otherwise start a new AR session with required features
         if (navigator.xr) {
-          const session = await navigator.xr.requestSession('immersive-ar', {
+          await navigator.xr.requestSession('immersive-ar', {
             requiredFeatures: ['hit-test', 'dom-overlay'],
             domOverlay: { root: document.body }
           });
@@ -39,7 +40,7 @@ export const CustomARButton = () => {
       onClick={handleARToggle}
       className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan py-2 px-4 rounded-md"
     >
-      {xr.session ? "Exit AR" : "Enter AR"}
+      {session ? "Exit AR" : "Enter AR"}
     </Button>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
@@ -14,9 +13,10 @@ import BackButton from "@/components/ar/BackButton";
 
 // Create XR state store for the XR component
 const xrState = createXRStore({
-  // Default session options
+  // Set required features at the top level
   requiredFeatures: ['hit-test', 'dom-overlay'],
-  domOverlay: { root: document.body }
+  // For domOverlay, we need to provide it in the right format
+  domOverlay: { rootElement: document.body }
 });
 
 /**
@@ -65,9 +65,7 @@ const ARView = () => {
       
       <div className="h-screen w-full">
         <Canvas>
-          <XR 
-            store={xrState}
-          >
+          <XR store={xrState}>
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <Environment preset="city" />
