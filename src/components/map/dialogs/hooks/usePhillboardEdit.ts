@@ -40,13 +40,16 @@ export function usePhillboardEdit({
       }
 
       // Update the phillboard in the database
+      // Convert id to string if it's a number to ensure compatibility with supabase
+      const phillboardId = typeof phillboard.id === 'number' ? String(phillboard.id) : phillboard.id;
+      
       const { data, error } = await supabase
         .from("phillboards")
         .update({
           title: tagline,
           image_type: `image-${selectedImage}`,
         })
-        .eq("id", phillboard.id)
+        .eq("id", phillboardId)
         .select();
 
       if (error) {
