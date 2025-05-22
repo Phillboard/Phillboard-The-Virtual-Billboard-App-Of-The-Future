@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
-import { Wallet } from "lucide-react";
+import { Wallet, TrendingUp, ArrowDownLeft, Award } from "lucide-react";
 import { getUserBalance } from "@/services/phillboardService";
 import { getUserPhillboardCount } from "@/services/phillboardService";
 
@@ -123,7 +123,7 @@ export function UserBalance() {
     <Card className="p-4 bg-black/40 border border-white/10">
       <div className="grid grid-cols-2 gap-4">
         <div className="flex items-center">
-          <Wallet className="mr-3 text-neon-cyan" />
+          <Wallet className="mr-3 text-neon-cyan animate-pulse" />
           <div>
             <p className="text-sm text-gray-400">Your Balance</p>
             <p className="text-xl font-bold text-neon-cyan">
@@ -132,25 +132,34 @@ export function UserBalance() {
           </div>
         </div>
         
-        <div>
-          <p className="text-sm text-gray-400">Total Earned</p>
-          <p className="text-lg font-semibold text-green-400">
-            {formatCurrency(userStats.totalEarned)}
-          </p>
+        <div className="flex items-center">
+          <TrendingUp className="mr-3 text-green-400" />
+          <div>
+            <p className="text-sm text-gray-400">Total Earned</p>
+            <p className="text-lg font-semibold text-green-400">
+              {formatCurrency(userStats.totalEarned)}
+            </p>
+          </div>
         </div>
         
-        <div>
-          <p className="text-sm text-gray-400">Total Spent</p>
-          <p className="text-lg font-semibold text-amber-400">
-            {formatCurrency(userStats.totalSpent)}
-          </p>
+        <div className="flex items-center">
+          <ArrowDownLeft className="mr-3 text-amber-400" />
+          <div>
+            <p className="text-sm text-gray-400">Total Spent</p>
+            <p className="text-lg font-semibold text-amber-400">
+              {formatCurrency(userStats.totalSpent)}
+            </p>
+          </div>
         </div>
         
-        <div>
-          <p className="text-sm text-gray-400">Phillboards Placed</p>
-          <p className="text-lg font-semibold text-fuchsia-400">
-            {userStats.totalPlaced}
-          </p>
+        <div className="flex items-center">
+          <Award className="mr-3 text-fuchsia-400" />
+          <div>
+            <p className="text-sm text-gray-400">Phillboards Placed</p>
+            <p className="text-lg font-semibold text-fuchsia-400">
+              {userStats.totalPlaced}
+            </p>
+          </div>
         </div>
       </div>
     </Card>
