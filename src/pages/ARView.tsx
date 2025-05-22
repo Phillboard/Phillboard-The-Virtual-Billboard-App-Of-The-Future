@@ -190,12 +190,7 @@ const ARView = () => {
       
       <div className="h-screen w-full">
         <Canvas>
-          <XR
-            sessionInit={{ 
-              requiredFeatures: ['hit-test', 'dom-overlay'], 
-              domOverlay: { root: document.body } 
-            }}
-          >
+          <XR>
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             <Environment preset="city" />
