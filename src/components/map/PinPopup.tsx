@@ -6,24 +6,27 @@ import { MapPin } from "./types";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { DeletePinDialog } from "./dialogs/DeletePinDialog";
+import { EditPinDialog } from "./dialogs/EditPinDialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 
 interface PinPopupProps {
   selectedPin: MapPin | null;
   onClose: () => void;
   onPinDelete?: () => void;
+  onPinUpdate?: (updatedPin: MapPin) => void;
 }
 
-export function PinPopup({ selectedPin, onClose, onPinDelete }: PinPopupProps) {
+export function PinPopup({ selectedPin, onClose, onPinDelete, onPinUpdate }: PinPopupProps) {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   if (!selectedPin) return null;
 
   // Check if user is the creator of the pin or an admin
-  const canDelete = isAdmin(user) || (user?.user_metadata?.username === selectedPin.username);
+  const canEdit = isAdmin(user) || (user?.user_metadata?.username === selectedPin.username);
   
   const handleViewInAR = () => {
     // Check WebXR support first
@@ -55,9 +58,17 @@ export function PinPopup({ selectedPin, onClose, onPinDelete }: PinPopupProps) {
     setIsDeleteDialogOpen(true);
   };
   
+  const handleEditClick = () => {
+    setIsEditDialogOpen(true);
+  };
+  
   const handleDeleteSuccess = () => {
     if (onPinDelete) onPinDelete();
     onClose();
+  };
+
+  const handleUpdateSuccess = (updatedPin: MapPin) => {
+    if (onPinUpdate) onPinUpdate(updatedPin);
   };
   
   return (
@@ -104,19 +115,29 @@ export function PinPopup({ selectedPin, onClose, onPinDelete }: PinPopupProps) {
             </Button>
             
             <div className="flex gap-2">
-              {canDelete && (
-                <Button 
-                  className="flex-1 bg-red-900/20 hover:bg-red-900/30 text-white border border-red-500"
-                  onClick={handleDeleteClick}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
+              {canEdit && (
+                <>
+                  <Button 
+                    className="flex-1 bg-blue-900/20 hover:bg-blue-900/30 text-white border border-blue-500"
+                    onClick={handleEditClick}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </Button>
+
+                  <Button 
+                    className="flex-1 bg-red-900/20 hover:bg-red-900/30 text-white border border-red-500"
+                    onClick={handleDeleteClick}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+                </>
               )}
               
               <Button 
                 variant="ghost" 
-                className={canDelete ? "flex-1" : "w-full"}
+                className={canEdit ? "flex-1" : "w-full"}
                 onClick={onClose}
               >
                 Close
@@ -131,6 +152,13 @@ export function PinPopup({ selectedPin, onClose, onPinDelete }: PinPopupProps) {
         onOpenChange={setIsDeleteDialogOpen}
         selectedPin={selectedPin}
         onDeleteSuccess={handleDeleteSuccess}
+      />
+
+      <EditPinDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        selectedPin={selectedPin}
+        onUpdatePin={handleUpdateSuccess}
       />
     </>
   );

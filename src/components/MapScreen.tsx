@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { LocationTracker } from "./map/LocationTracker";
 import { MapBackground } from "./map/MapBackground";
@@ -56,6 +55,17 @@ export function MapScreen() {
     }
   };
 
+  const handlePinUpdate = (updatedPin: MapPin) => {
+    // Update the pin in the local state
+    setMapPins(currentPins =>
+      currentPins.map(pin => 
+        pin.id === updatedPin.id ? updatedPin : pin
+      )
+    );
+    // Update the selected pin to reflect changes
+    setSelectedPin(updatedPin);
+  };
+
   const handleMapClick = (location: UserLocation) => {
     if (userIsAdmin && isAdminMode) {
       setSelectedLocation(location);
@@ -108,6 +118,7 @@ export function MapScreen() {
         selectedPin={selectedPin}
         onClose={() => setSelectedPin(null)}
         onPinDelete={handlePinDelete}
+        onPinUpdate={handlePinUpdate}
       />
       
       {/* FAB for creating a new phillboard */}
