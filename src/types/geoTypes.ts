@@ -16,4 +16,5 @@ export interface Phillboard {
   image_type: string;
   user_id: string;
   content: string | null;
+  placement_type?: string;
 }

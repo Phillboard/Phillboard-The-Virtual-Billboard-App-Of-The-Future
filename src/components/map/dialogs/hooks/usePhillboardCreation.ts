@@ -55,7 +55,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
       const placementType = getPlacementType(selectedImage);
       
       // Create the phillboard in the database
-      const newPhillboardData = {
+      const newPhillboardData: any = {
         title: tagline,
         username: username,
         lat: locationToUse.lat,
@@ -80,7 +80,7 @@ export function usePhillboardCreation({ onCreatePin, onClose }: {
         username: newPhillboard.username,
         distance: "0 ft", // It's at the user's location
         image_type: newPhillboard.image_type,
-        placement_type: newPhillboard.placement_type,
+        placement_type: placementType,
         content: newPhillboard.content
       };
       

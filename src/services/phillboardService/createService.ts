@@ -23,6 +23,7 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
         image_type: phillboard.image_type || 'text',
         content: phillboard.content || null,
         created_at: new Date().toISOString(),
+        placement_type: phillboard.placement_type || 'human'
       };
     }
     
@@ -36,7 +37,8 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
           lng: phillboard.lng,
           image_type: phillboard.image_type || 'text',
           content: phillboard.content || null,
-          user_id: session.user.id // Always use the authenticated user's ID
+          user_id: session.user.id, // Always use the authenticated user's ID
+          placement_type: phillboard.placement_type || 'human'
         }
       ])
       .select();
