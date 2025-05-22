@@ -1,12 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Shield, UserRound, MapPin, Plus } from "lucide-react";
+import { Shield, UserRound, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import { generateDummyData } from "@/services/dummyDataService";
 
 // Mock admin data
 const adminData = {
@@ -27,7 +27,6 @@ const adminData = {
 export function AdminScreen() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
   
   // In a real app, this would be a secure admin password stored in the backend
   const ADMIN_PASSWORD = "admin123";
@@ -45,22 +44,6 @@ export function AdminScreen() {
     setIsAuthenticated(false);
     setPassword("");
     toast.info("Admin logged out");
-  };
-
-  const handleGenerateDummyData = async () => {
-    setIsGenerating(true);
-    try {
-      const result = await generateDummyData();
-      if (result.success) {
-        toast.success(result.message);
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error(`Failed to generate dummy data: ${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      setIsGenerating(false);
-    }
   };
   
   if (!isAuthenticated) {
@@ -136,31 +119,6 @@ export function AdminScreen() {
             <h3 className="text-2xl font-bold">{adminData.totalPhillboards}</h3>
           </div>
         </div>
-      </div>
-      
-      {/* Generate Dummy Data */}
-      <div className="neon-card p-4 rounded-lg mb-6">
-        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <Plus className="text-neon-magenta h-5 w-5" /> Generate Dummy Data
-        </h2>
-        <p className="text-sm text-gray-400 mb-4">
-          Create a random user with an email from name@phillboards.com and generate 5-25 text-only phillboards with unique sayings.
-        </p>
-        <Button
-          onClick={handleGenerateDummyData}
-          disabled={isGenerating}
-          className="bg-neon-magenta/20 hover:bg-neon-magenta/30 text-white border border-neon-magenta"
-        >
-          {isGenerating ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Generating...
-            </>
-          ) : "Generate Dummy User & Phillboards"}
-        </Button>
       </div>
       
       {/* Flagged Content */}
