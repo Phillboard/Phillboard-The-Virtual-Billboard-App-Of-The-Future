@@ -22,14 +22,21 @@ function formatDistance(distanceInMeters: number): string {
   if (distanceInMeters < 1000) {
     return `${Math.round(distanceInMeters)} ft`;
   } else {
-    return `${(distanceInMeters / 1000).toFixed(1)} mi`;
+    const miles = distanceInMeters / 1609.34; // Convert meters to miles
+    return `${miles.toFixed(1)} mi`;
   }
 }
 
-// Fetch phillboards near a location
-export async function fetchNearbyPhillboards(userLocation: UserLocation): Promise<MapPin[]> {
+// Fetch phillboards near a location within a specified radius
+export async function fetchNearbyPhillboards(
+  userLocation: UserLocation, 
+  radiusMiles: number = 0.5
+): Promise<MapPin[]> {
   try {
-    console.log("Fetching phillboards from database...");
+    console.log(`Fetching phillboards from database within ${radiusMiles} miles...`);
+    
+    // Convert radius from miles to meters
+    const radiusMeters = radiusMiles * 1609.34;
     
     // Fetch all phillboards from the database
     // In a real-world app with many entries, we would add pagination and filtering
@@ -49,33 +56,33 @@ export async function fetchNearbyPhillboards(userLocation: UserLocation): Promis
     
     console.log(`Found ${data.length} phillboards in database`);
     
-    // Calculate distance for each phillboard
-    const pinsWithDistance = data.map(pin => {
-      const distanceInMeters = calculateDistance(
-        userLocation.lat, 
-        userLocation.lng, 
-        pin.lat, 
-        pin.lng
-      );
-      
-      return {
-        id: pin.id,
-        lat: pin.lat,
-        lng: pin.lng,
-        title: pin.title,
-        username: pin.username,
-        distance: formatDistance(distanceInMeters),
-        image_type: pin.image_type,
-        content: pin.content
-      };
-    });
+    // Calculate distance for each phillboard and filter by radius
+    const pinsWithDistance = data
+      .map(pin => {
+        const distanceInMeters = calculateDistance(
+          userLocation.lat, 
+          userLocation.lng, 
+          pin.lat, 
+          pin.lng
+        );
+        
+        return {
+          id: pin.id,
+          lat: pin.lat,
+          lng: pin.lng,
+          title: pin.title,
+          username: pin.username,
+          distance: formatDistance(distanceInMeters),
+          distanceValue: distanceInMeters, // Store the raw value for filtering
+          image_type: pin.image_type,
+          content: pin.content
+        };
+      })
+      .filter(pin => pin.distanceValue <= radiusMeters) // Only keep pins within radius
+      .sort((a, b) => a.distanceValue - b.distanceValue); // Sort by distance
     
-    // Sort by distance
-    return pinsWithDistance.sort((a, b) => {
-      const distA = parseFloat(a.distance.replace(/[^0-9.]/g, ''));
-      const distB = parseFloat(b.distance.replace(/[^0-9.]/g, ''));
-      return distA - distB;
-    });
+    // Remove the distanceValue property before returning
+    return pinsWithDistance.map(({ distanceValue, ...pin }) => pin);
     
   } catch (err) {
     console.error("Failed to fetch nearby phillboards:", err);

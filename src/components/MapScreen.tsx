@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { LocationTracker } from "./map/LocationTracker";
 import { MapBackground } from "./map/MapBackground";
@@ -18,6 +19,7 @@ export function MapScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<UserLocation | null>(null);
+  const nearbyRadiusMiles = 0.5; // Define radius of 0.5 miles
 
   const { user, isAdmin } = useAuth();
   const userIsAdmin = isAdmin(user);
@@ -86,6 +88,7 @@ export function MapScreen() {
         onLocationUpdate={handleLocationUpdate}
         onError={setError}
         onLoadingChange={setIsLoading}
+        radiusMiles={nearbyRadiusMiles}
       />
       
       {/* Map background with pins */}
@@ -104,6 +107,7 @@ export function MapScreen() {
         isLoading={isLoading}
         userLocation={userLocation}
         pinsCount={mapPins.length}
+        nearbyRadius={nearbyRadiusMiles}
       />
 
       {/* Admin mode toggle button - extracted to its own component */}

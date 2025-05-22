@@ -8,12 +8,14 @@ interface LocationTrackerProps {
   onLocationUpdate: (location: UserLocation, pins: MapPin[]) => void;
   onError: (error: string) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  radiusMiles?: number;
 }
 
 export function LocationTracker({ 
   onLocationUpdate, 
   onError, 
-  onLoadingChange 
+  onLoadingChange,
+  radiusMiles = 0.5
 }: LocationTrackerProps) {
   const hasNotifiedSuccess = useRef(false);
   const timeoutRef = useRef<number | null>(null);
@@ -64,8 +66,8 @@ export function LocationTracker({
     const userLocation = { lat: latitude, lng: longitude };
     
     try {
-      // Fetch real phillboards from database
-      const phillboards = await fetchNearbyPhillboards(userLocation);
+      // Fetch real phillboards from database within specified radius
+      const phillboards = await fetchNearbyPhillboards(userLocation, radiusMiles);
       onLocationUpdate(userLocation, phillboards);
       onLoadingChange(false);
       
@@ -116,8 +118,8 @@ export function LocationTracker({
     const userLocation = { lat: fallbackLat, lng: fallbackLng };
     
     try {
-      // Try to fetch real phillboards even with fallback location
-      const phillboards = await fetchNearbyPhillboards(userLocation);
+      // Try to fetch real phillboards even with fallback location, using specified radius
+      const phillboards = await fetchNearbyPhillboards(userLocation, radiusMiles);
       onLocationUpdate(userLocation, phillboards);
     } catch (error) {
       console.error("Error fetching phillboards with fallback location:", error);
