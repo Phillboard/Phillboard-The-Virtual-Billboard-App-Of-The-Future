@@ -22,7 +22,10 @@ async function calculatePlacementCost(lat: number, lng: number, userId: string |
       .gt('lng', lng - tolerance)
       .order('created_at', { ascending: false });
       
-    if (error) throw error;
+    if (error) {
+      console.error("Error finding existing phillboards:", error);
+      return { cost: 1, originalCreatorId: null, overwriteCount: 0 };
+    }
     
     // Get the original creator ID (most recent one that isn't the current user)
     let originalCreatorId: string | null = null;
@@ -93,18 +96,23 @@ async function processPhillboardTransaction(
       
       console.log(`Attempting to pay $${creatorShare} to creator ${originalCreatorId}`);
       
-      const { data, error: creatorUpdateError } = await supabase
-        .rpc('add_to_balance', { 
-          user_id: originalCreatorId, 
-          amount: creatorShare 
-        });
-        
-      if (creatorUpdateError) {
-        console.error("Error paying original creator:", creatorUpdateError);
+      try {
+        const { data, error: creatorUpdateError } = await supabase
+          .rpc('add_to_balance', { 
+            user_id: originalCreatorId, 
+            amount: creatorShare 
+          });
+          
+        if (creatorUpdateError) {
+          console.error("Error paying original creator:", creatorUpdateError);
+          // Continue anyway, we don't want to block the placement
+        } else {
+          console.log(`Successfully paid $${creatorShare} to creator ${originalCreatorId}`);
+          toast.info(`The original creator earned $${creatorShare.toFixed(2)} from your placement.`);
+        }
+      } catch (err) {
+        console.error("Exception when paying creator:", err);
         // Continue anyway, we don't want to block the placement
-      } else {
-        console.log(`Successfully paid $${creatorShare} to creator ${originalCreatorId}`);
-        toast.info(`The original creator earned $${creatorShare.toFixed(2)} from your placement.`);
       }
     }
     
@@ -182,11 +190,13 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
       
     if (error) {
       console.error("Error creating phillboard:", error);
+      toast.error("Failed to create phillboard: " + error.message);
       throw error;
     }
     
     if (!data || data.length === 0) {
       console.error("No data returned from phillboard creation");
+      toast.error("Failed to create phillboard");
       throw new Error("Failed to create phillboard");
     }
     

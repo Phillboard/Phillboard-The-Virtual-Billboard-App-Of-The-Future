@@ -140,18 +140,24 @@ export function usePhillboardEdit({
             originalPhillboard.user_id !== session.user.id) {
           const creatorShare = editCost * 0.5;
           
-          const { data, error: creatorUpdateError } = await supabase
-            .rpc('add_to_balance', { 
-              user_id: originalPhillboard.user_id, 
-              amount: creatorShare 
-            });
-            
-          if (creatorUpdateError) {
-            console.error("Error paying original creator:", creatorUpdateError);
+          try {
+            const { data, error: creatorUpdateError } = await supabase
+              .rpc('add_to_balance', { 
+                user_id: originalPhillboard.user_id, 
+                amount: creatorShare 
+              });
+              
+            if (creatorUpdateError) {
+              console.error("Error paying original creator:", creatorUpdateError);
+              toast.error("Failed to pay original creator, but your edit was successful.");
+            } else {
+              console.log("Original creator payment successful:", data);
+              toast.info(`The original creator earned $${creatorShare.toFixed(2)} from your edit.`);
+            }
+          } catch (err) {
+            console.error("Exception when paying creator:", err);
+            // Continue anyway since the edit is still valid
             toast.error("Failed to pay original creator, but your edit was successful.");
-          } else {
-            console.log("Original creator payment successful:", data);
-            toast.info(`The original creator earned $${creatorShare.toFixed(2)} from your edit.`);
           }
         }
       }
