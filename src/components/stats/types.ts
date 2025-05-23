@@ -23,6 +23,7 @@ export interface StatsData {
   topCreators: LeaderboardEntry[];
   topEditors: LeaderboardEntry[];
   topEarners: LeaderboardEntry[];
+  topBalances: LeaderboardEntry[];
   mostEditedPhillboards: {
     id: string;
     title: string;
@@ -51,6 +52,13 @@ export interface TopEarner {
   username: string | null;
   avatar_url: string | null;
   earnings: number;
+}
+
+export interface TopBalance {
+  user_id: string;
+  username: string | null;
+  avatar_url: string | null;
+  balance: number;
 }
 
 export interface MostEditedPhillboard {

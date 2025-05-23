@@ -1,7 +1,7 @@
 
 import { StatsData } from "./types";
 import { LeaderboardList } from "./LeaderboardList";
-import { Trophy, Crown, BadgePercent } from "lucide-react";
+import { Trophy, Crown, BadgePercent, Wallet } from "lucide-react";
 import { formatCurrency } from "./utils";
 
 interface LeaderboardViewProps {
@@ -40,6 +40,17 @@ export function LeaderboardView({ statsData, isLoading }: LeaderboardViewProps) 
         icon={BadgePercent}
         iconColor="text-green-500"
         valueSuffix="earned"
+        formatValue={(value) => formatCurrency(value)}
+      />
+
+      {/* Top Balances Leaderboard */}
+      <LeaderboardList
+        title="Highest User Balances"
+        entries={statsData.topBalances}
+        isLoading={isLoading}
+        icon={Wallet}
+        iconColor="text-purple-500"
+        valueSuffix="balance"
         formatValue={(value) => formatCurrency(value)}
       />
     </div>

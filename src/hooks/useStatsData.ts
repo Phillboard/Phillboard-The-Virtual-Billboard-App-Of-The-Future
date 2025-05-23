@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -7,6 +6,7 @@ import {
   TopCreator,
   TopEditor,
   TopEarner,
+  TopBalance,
   MostEditedPhillboard
 } from "@/components/stats/types";
 
@@ -24,6 +24,7 @@ export function useStatsData(user: User | null) {
     topCreators: [],
     topEditors: [],
     topEarners: [],
+    topBalances: [],
     mostEditedPhillboards: []
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -176,6 +177,22 @@ export function useStatsData(user: User | null) {
               rank: index + 1
             }))
           : [];
+
+        // Get users with highest balances
+        const { data: topBalancesData } = await supabase
+          .from('user_balances')
+          .select('id, balance, profiles:id(username, avatar_url)')
+          .order('balance', { ascending: false })
+          .limit(5);
+        
+        const topBalances = Array.isArray(topBalancesData)
+          ? topBalancesData.map((item: any, index) => ({
+              username: item.profiles?.username || 'Anonymous',
+              avatar_url: item.profiles?.avatar_url || undefined,
+              value: Number(item.balance || 0),
+              rank: index + 1
+            }))
+          : [];
         
         // Get most edited phillboards
         const { data: mostEditedData } = await supabase
@@ -203,6 +220,7 @@ export function useStatsData(user: User | null) {
           topCreators,
           topEditors,
           topEarners,
+          topBalances,
           mostEditedPhillboards
         });
         
