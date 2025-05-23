@@ -23,6 +23,9 @@ export function LeaderboardList({
   valueSuffix = "",
   formatValue = (value) => `${value}`
 }: LeaderboardListProps) {
+  // Debug logging
+  console.log(`LeaderboardList ${title}:`, entries);
+  
   return (
     <Card className="p-4 bg-black/40 border border-white/10">
       <h3 className="font-semibold mb-3 flex items-center">

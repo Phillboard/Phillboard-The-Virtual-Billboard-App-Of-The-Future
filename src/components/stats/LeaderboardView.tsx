@@ -10,6 +10,9 @@ interface LeaderboardViewProps {
 }
 
 export function LeaderboardView({ statsData, isLoading }: LeaderboardViewProps) {
+  // Debug logging to check what data we're getting
+  console.log("LeaderboardView received balances:", statsData.topBalances);
+
   return (
     <div className="space-y-6">
       {/* Top Creators Leaderboard */}

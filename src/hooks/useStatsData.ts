@@ -178,12 +178,14 @@ export function useStatsData(user: User | null) {
             }))
           : [];
 
-        // Get users with highest balances
+        // Get users with highest balances - Fixed query
         const { data: topBalancesData } = await supabase
           .from('user_balances')
-          .select('id, balance, profiles:id(username, avatar_url)')
+          .select('id, balance, profiles(username, avatar_url)')
           .order('balance', { ascending: false })
           .limit(5);
+        
+        console.log("Top balances data:", topBalancesData); // Debug log
         
         const topBalances = Array.isArray(topBalancesData)
           ? topBalancesData.map((item: any, index) => ({
@@ -193,6 +195,8 @@ export function useStatsData(user: User | null) {
               rank: index + 1
             }))
           : [];
+          
+        console.log("Processed top balances:", topBalances); // Debug log
         
         // Get most edited phillboards
         const { data: mostEditedData } = await supabase
