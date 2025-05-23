@@ -16,4 +16,7 @@ export interface MapPin {
   content?: string | null;
   created_at?: string;
   placement_type?: string;
+  last_edited_at?: string;
+  edit_count?: number;
+  is_edited?: boolean;
 }

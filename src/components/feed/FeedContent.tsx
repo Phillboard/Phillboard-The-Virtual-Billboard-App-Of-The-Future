@@ -8,13 +8,19 @@ import { DeletePinDialog } from "../map/dialogs/DeletePinDialog";
 import { UserProfileDialog } from "../profile/UserProfileDialog";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { ActivityItem } from "./ActivityItem";
 
 interface FeedContentProps {
   phillboards: Phillboard[];
   isLoading: boolean;
+  activityFeed?: Array<{
+    type: 'placement' | 'edit';
+    phillboard: Phillboard;
+    timestamp: string;
+  }>;
 }
 
-export function FeedContent({ phillboards, isLoading }: FeedContentProps) {
+export function FeedContent({ phillboards, isLoading, activityFeed = [] }: FeedContentProps) {
   const { user, isAdmin } = useAuth();
   const [selectedPin, setSelectedPin] = useState<any | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -43,22 +49,36 @@ export function FeedContent({ phillboards, isLoading }: FeedContentProps) {
     return <LoadingState />;
   }
   
-  if (phillboards.length === 0) {
+  if (phillboards.length === 0 || (activityFeed && activityFeed.length === 0)) {
     return <EmptyState />;
   }
 
   return (
     <>
       <div className="space-y-4">
-        {phillboards.map((phillboard) => (
-          <PhillboardItem
-            key={phillboard.id}
-            phillboard={phillboard}
-            canDelete={canDeletePhillboard(phillboard)}
-            onDeleteClick={handleDeleteClick}
-            onUsernameClick={handleUsernameClick}
-          />
-        ))}
+        {activityFeed && activityFeed.length > 0 ? (
+          // Render activity feed if available
+          activityFeed.map((activity, index) => (
+            <ActivityItem
+              key={`${activity.phillboard.id}-${index}`}
+              activity={activity}
+              canDelete={canDeletePhillboard(activity.phillboard)}
+              onDeleteClick={handleDeleteClick}
+              onUsernameClick={handleUsernameClick}
+            />
+          ))
+        ) : (
+          // Fall back to standard phillboard list
+          phillboards.map((phillboard) => (
+            <PhillboardItem
+              key={phillboard.id}
+              phillboard={phillboard}
+              canDelete={canDeletePhillboard(phillboard)}
+              onDeleteClick={handleDeleteClick}
+              onUsernameClick={handleUsernameClick}
+            />
+          ))
+        )}
       </div>
       
       {/* Delete confirmation dialog */}

@@ -11,6 +11,9 @@ export interface Phillboard {
   lat: number;
   lng: number;
   placement_type?: string;
+  last_edited_at?: string;
+  edit_count?: number;
+  is_edited?: boolean;
 }
 
 export const convertToMapPin = (phillboard: Phillboard): MapPin => ({
@@ -22,5 +25,8 @@ export const convertToMapPin = (phillboard: Phillboard): MapPin => ({
   distance: "nearby", // Placeholder for distance
   image_type: phillboard.image_type as any,
   content: phillboard.content,
-  placement_type: phillboard.placement_type
+  placement_type: phillboard.placement_type,
+  last_edited_at: phillboard.last_edited_at,
+  edit_count: phillboard.edit_count,
+  is_edited: phillboard.is_edited
 });
