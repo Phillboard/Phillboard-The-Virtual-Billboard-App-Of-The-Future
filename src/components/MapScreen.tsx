@@ -1,40 +1,34 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { LocationTracker } from "./map/LocationTracker";
-import { MapBackground } from "./map/MapBackground";
-import { LocationHeader } from "./map/LocationHeader";
-import { PinPopup } from "./map/PinPopup";
 import { CreatePinDialog } from "./map/dialogs/CreatePinDialog";
 import { CreatePinButton } from "./map/CreatePinButton";
-import { AdminModeToggle } from "./map/AdminModeToggle";
-import { UserLocation, MapPin } from "./map/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { MapPin, UserLocation } from "./map/types";
+import { useMapState } from "./map/hooks/useMapState";
+import { MapContainer } from "./map/MapContainer";
 
 export function MapScreen() {
-  const [selectedPin, setSelectedPin] = useState<MapPin | null>(null);
-  const [isPlaceDialogOpen, setIsPlaceDialogOpen] = useState(false);
-  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-  const [mapPins, setMapPins] = useState<MapPin[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isAdminMode, setIsAdminMode] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<UserLocation | null>(null);
-  // We'll remove the nearbyRadiusMiles limitation
+  const {
+    selectedPin,
+    setSelectedPin,
+    isPlaceDialogOpen,
+    setIsPlaceDialogOpen,
+    userLocation,
+    setUserLocation,
+    mapPins,
+    setMapPins,
+    isLoading,
+    setIsLoading,
+    error,
+    setError,
+    selectedLocation,
+    setSelectedLocation
+  } = useMapState();
   
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const { user, isAdmin } = useAuth();
   const userIsAdmin = isAdmin(user);
-  
-  // Add a timeout to prevent infinite loading state
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isLoading) {
-        console.log("Forcing loading state to complete after timeout");
-        setIsLoading(false);
-      }
-    }, 20000); // 20 seconds timeout
-    
-    return () => clearTimeout(timer);
-  }, [isLoading]);
   
   const handleLocationUpdate = (location: UserLocation, pins: MapPin[]) => {
     console.log("Location update received:", location);
@@ -91,38 +85,19 @@ export function MapScreen() {
         radiusMiles={5} // Set a larger default radius but it's not restrictive anymore
       />
       
-      {/* Map background with pins */}
-      <MapBackground
+      <MapContainer
         isLoading={isLoading}
         error={error}
         userLocation={userLocation}
         mapPins={mapPins}
+        selectedPin={selectedPin}
+        isAdminMode={isAdminMode}
         onPinSelect={setSelectedPin}
         onMapClick={handleMapClick}
-        isAdminMode={isAdminMode}
-      />
-      
-      {/* Top bar with location info */}
-      <LocationHeader
-        isLoading={isLoading}
-        userLocation={userLocation}
-        pinsCount={mapPins.length}
-        nearbyRadius={0} // We're not using a fixed radius anymore
-      />
-
-      {/* Admin mode toggle button - extracted to its own component */}
-      <AdminModeToggle
-        isAdminMode={isAdminMode}
-        isAdmin={userIsAdmin}
-        onToggle={toggleAdminMode}
-      />
-      
-      {/* Pin popup dialog */}
-      <PinPopup
-        selectedPin={selectedPin}
-        onClose={() => setSelectedPin(null)}
         onPinDelete={handlePinDelete}
         onPinUpdate={handlePinUpdate}
+        onToggleAdminMode={toggleAdminMode}
+        userIsAdmin={userIsAdmin}
       />
       
       {/* FAB for creating a new phillboard */}
