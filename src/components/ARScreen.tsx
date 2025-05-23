@@ -7,6 +7,14 @@ import { checkARSupport } from "@/utils/arUtils";
 import { useNavigate } from "react-router-dom";
 import HumanARView from "@/components/ar/HumanARView";
 import BillboardARView from "@/components/ar/BillboardARView";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
+import ARDemo from "@/components/ar/ARDemo";
 
 // WebXR Button Component
 function WebXRButton() {
@@ -43,11 +51,29 @@ function WebXRButton() {
 export function ARScreen() {
   const [arSupported, setARSupported] = useState<boolean | null>(null);
   const [activeView, setActiveView] = useState<string>("human");
+  const [showARDemo, setShowARDemo] = useState(false);
+  const navigate = useNavigate();
   
   // Check AR support on component mount
   useEffect(() => {
     checkARSupport().then(setARSupported);
   }, []);
+
+  const handleAROptionSelect = (option: string) => {
+    if (option === 'demo') {
+      setShowARDemo(true);
+    } else if (option === 'webxr') {
+      navigate('/ar-view');
+    }
+  };
+  
+  if (showARDemo) {
+    return (
+      <div className="screen relative bg-black p-0 h-full">
+        <ARDemo onBack={() => setShowARDemo(false)} />
+      </div>
+    );
+  }
   
   return (
     <div className="screen relative bg-black p-0 h-full">
@@ -90,7 +116,30 @@ export function ARScreen() {
             </div>
           ) : arSupported ? (
             <div className="flex flex-col gap-4">
-              <WebXRButton />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan w-full"
+                  >
+                    AR Options <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-black/90 border border-neon-cyan/30 text-white">
+                  <DropdownMenuItem 
+                    onClick={() => handleAROptionSelect('demo')}
+                    className="hover:bg-neon-cyan/20 cursor-pointer"
+                  >
+                    Test AR (Universal Demo)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => handleAROptionSelect('webxr')}
+                    className="hover:bg-neon-cyan/20 cursor-pointer"
+                  >
+                    WebXR AR Experience
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
               <Button 
                 className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan"
                 onClick={() => toast.info(`Place ${activeView === "human" ? "Human" : "Billboard"} Phillboard`)}
