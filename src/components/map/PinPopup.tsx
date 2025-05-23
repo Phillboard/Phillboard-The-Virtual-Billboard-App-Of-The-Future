@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Dialog,
@@ -174,7 +173,7 @@ export function PinPopup({
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         selectedPin={selectedPin}
-        onUpdatePin={onUpdatePin}
+        onUpdatePin={onPinUpdate}
       />
       
       <DeletePinDialog 
@@ -192,4 +191,3 @@ export function PinPopup({
     </Dialog>
   );
 }
-
