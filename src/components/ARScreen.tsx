@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -14,7 +13,7 @@ import {
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import ARDemo from "@/components/ar/ARDemo";
+import ARDemo from "@/components/ar/demo/ARDemo";
 
 // WebXR Button Component
 function WebXRButton() {
