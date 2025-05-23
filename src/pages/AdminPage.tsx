@@ -6,12 +6,26 @@ import { UserBalancesSection } from "@/components/admin/UserBalancesSection";
 
 const AdminPage = () => {
   const { user, isAdmin } = useAuth();
+  
+  // Check if user is logged in
+  if (!user) {
+    return (
+      <div className="container px-4 py-8">
+        <div className="p-4 border border-red-500/30 rounded-lg bg-red-500/10">
+          <p className="text-red-400">You need to be logged in to access this page.</p>
+        </div>
+      </div>
+    );
+  }
 
+  // Check if user is admin
+  const userIsAdmin = isAdmin(user);
+  
   return (
     <div className="container px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
       
-      {isAdmin(user) ? (
+      {userIsAdmin ? (
         <div className="space-y-6">
           {/* Update Timestamp Section */}
           <UpdateTimestampSection />
