@@ -27,25 +27,41 @@ export const updatePhillboardInDatabase = async (
       throw handleServiceError(checkError || new Error("Phillboard not found"), "Phillboard not found or inaccessible");
     }
     
-    // Perform the update but don't use single() here to avoid errors
+    // Perform the update with explicit return option
     const { data, error } = await supabase
       .from("phillboards")
       .update(updates)
       .eq("id", idString)
-      .select();
+      .select()
+      .maybeSingle(); // Use maybeSingle() instead of relying on array handling
 
     if (error) {
       console.error("Database update error:", error);
       throw handleServiceError(error, `Failed to update phillboard`);
     }
     
-    if (!data || data.length === 0) {
+    if (!data) {
       console.error("Update returned no data");
-      throw new Error("Failed to retrieve updated phillboard");
+      // Instead of throwing an error, fetch the updated record
+      const { data: fetchedData, error: fetchError } = await supabase
+        .from("phillboards")
+        .select()
+        .eq("id", idString)
+        .single();
+        
+      if (fetchError || !fetchedData) {
+        throw handleServiceError(
+          fetchError || new Error("Failed to retrieve updated phillboard"), 
+          "Could not verify phillboard update"
+        );
+      }
+      
+      console.log("Retrieved phillboard after update:", fetchedData);
+      return fetchedData;
     }
     
-    console.log("Phillboard update successful:", data[0]);
-    return data[0]; // Return the first item in the array
+    console.log("Phillboard update successful:", data);
+    return data;
   } catch (error) {
     console.error("Exception in updatePhillboardInDatabase:", error);
     throw handleServiceError(error, "Exception updating phillboard");
