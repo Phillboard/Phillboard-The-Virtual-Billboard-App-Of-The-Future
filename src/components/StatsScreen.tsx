@@ -181,13 +181,14 @@ export function StatsScreen() {
           .gte('created_at', sevenDaysAgo.toISOString());
         
         // Group placements by day
-        const dailyPlacementMap = new Map<string, number>();
+        // Fixed: Don't use 'new Map<string, number>()', use a regular JavaScript object instead
+        const dailyPlacementMap: Record<string, number> = {};
         
         // Initialize with 0 counts for all 7 days
         for (let i = 0; i < 7; i++) {
           const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
           const formattedDate = date.toISOString().split('T')[0];
-          dailyPlacementMap.set(formattedDate, 0);
+          dailyPlacementMap[formattedDate] = 0;
         }
         
         // Count placements per day
@@ -196,14 +197,14 @@ export function StatsScreen() {
             const date = new Date(placement.created_at);
             const formattedDate = date.toISOString().split('T')[0];
             
-            if (dailyPlacementMap.has(formattedDate)) {
-              dailyPlacementMap.set(formattedDate, dailyPlacementMap.get(formattedDate)! + 1);
+            if (formattedDate in dailyPlacementMap) {
+              dailyPlacementMap[formattedDate]++;
             }
           });
         }
         
         // Convert to array for chart data
-        const dailyPlacements = Array.from(dailyPlacementMap.entries())
+        const dailyPlacements = Object.entries(dailyPlacementMap)
           .map(([name, value]) => ({ name, value }))
           .sort((a, b) => a.name.localeCompare(b.name));
         
@@ -296,7 +297,7 @@ export function StatsScreen() {
   
   // Format currency helper - Fixed: Use the correct Intl API
   const formatCurrency = (amount: number) => {
-    return Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
