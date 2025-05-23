@@ -7,6 +7,8 @@ export interface LeaderboardEntry {
   avatar_url?: string;
   value: number;
   rank: number;
+  id?: string; // Optional for MostEditedPhillboard
+  title?: string; // Optional for MostEditedPhillboard
 }
 
 // Type definition for stats data
@@ -24,12 +26,7 @@ export interface StatsData {
   topEditors: LeaderboardEntry[];
   topEarners: LeaderboardEntry[];
   topBalances: LeaderboardEntry[];
-  mostEditedPhillboards: {
-    id: string;
-    title: string;
-    username: string;
-    edits: number;
-  }[];
+  mostEditedPhillboards: LeaderboardEntry[];
 }
 
 // Type definitions for database function results

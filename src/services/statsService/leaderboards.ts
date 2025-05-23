@@ -73,12 +73,12 @@ export async function fetchLeaderboardData(): Promise<LeaderboardResponse> {
 async function fetchTopBalances(): Promise<LeaderboardEntry[]> {
   try {
     // First attempt: join with profiles table
-    const { data: topBalancesData, error: balanceError } = await supabase
+    const { data: balancesData, error: balanceError } = await supabase
       .from('user_balances')
       .select(`
         id,
         balance,
-        profiles!user_balances_id_fkey (
+        profiles (
           username,
           avatar_url
         )
@@ -86,16 +86,15 @@ async function fetchTopBalances(): Promise<LeaderboardEntry[]> {
       .order('balance', { ascending: false })
       .limit(5);
     
-    console.log("Top balances query result:", topBalancesData);
-    console.log("Balance error if any:", balanceError);
+    console.log("Top balances query result:", balancesData);
     
     // If join doesn't work, try the direct approach
-    if (!topBalancesData || balanceError) {
+    if (!balancesData || balanceError) {
       return await fetchTopBalancesFallback();
     }
     
-    return Array.isArray(topBalancesData)
-      ? topBalancesData.map((item, index) => ({
+    return Array.isArray(balancesData)
+      ? balancesData.map((item, index) => ({
           username: item.profiles?.username || 'Unknown User',
           avatar_url: item.profiles?.avatar_url || undefined,
           value: Number(item.balance || 0),

@@ -1,5 +1,5 @@
 
-import { StatsData, TopCreator, TopEditor, TopEarner, TopBalance, MostEditedPhillboard } from "@/components/stats/types";
+import { StatsData, TopCreator, TopEditor, TopEarner, TopBalance, MostEditedPhillboard, LeaderboardEntry } from "@/components/stats/types";
 
 // Types for the service response data 
 export interface GlobalStatsResponse {
@@ -17,10 +17,10 @@ export interface UserStatsResponse {
 }
 
 export interface LeaderboardResponse {
-  topCreators: TopCreator[];
-  topEditors: TopEditor[];
-  topEarners: TopEarner[];
-  topBalances: TopBalance[];
+  topCreators: LeaderboardEntry[];
+  topEditors: LeaderboardEntry[];
+  topEarners: LeaderboardEntry[];
+  topBalances: LeaderboardEntry[];
 }
 
 export interface DailyPlacementsResponse {
@@ -28,5 +28,5 @@ export interface DailyPlacementsResponse {
 }
 
 export interface MostEditedResponse {
-  mostEditedPhillboards: MostEditedPhillboard[];
+  mostEditedPhillboards: LeaderboardEntry[];
 }

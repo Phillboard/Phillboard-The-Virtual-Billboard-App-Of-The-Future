@@ -11,11 +11,13 @@ export async function fetchMostEditedPhillboards(): Promise<MostEditedResponse> 
       .rpc('get_most_edited_phillboards', { limit_count: 5 });
     
     const mostEditedPhillboards = Array.isArray(mostEditedData)
-      ? mostEditedData.map((item) => ({
-          id: item.phillboard_id,
-          title: item.title || 'Untitled',
+      ? mostEditedData.map((item, index) => ({
           username: item.username || 'Anonymous',
-          edits: Number(item.edit_count)
+          value: Number(item.edit_count),
+          rank: index + 1,
+          // Additional fields that might be useful for display
+          title: item.title || 'Untitled',
+          id: item.phillboard_id
         }))
       : [];
     
