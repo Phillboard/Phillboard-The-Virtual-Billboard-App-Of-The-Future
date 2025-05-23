@@ -68,89 +68,63 @@ export async function fetchLeaderboardData(): Promise<LeaderboardResponse> {
 }
 
 /**
- * Helper function to fetch users with top balances
+ * Helper function to fetch users with top balances - completely rewritten
+ * to avoid join issues and directly fetch profiles separately
  */
 async function fetchTopBalances(): Promise<LeaderboardEntry[]> {
   try {
-    // First attempt: join with profiles table
+    console.log("Fetching top balances...");
+    
+    // Get the top 5 balance records
     const { data: balancesData, error: balanceError } = await supabase
       .from('user_balances')
-      .select(`
-        id,
-        balance,
-        profiles (
-          username,
-          avatar_url
-        )
-      `)
+      .select('id, balance')
       .order('balance', { ascending: false })
       .limit(5);
     
-    console.log("Top balances query result:", balancesData);
-    
-    // If join doesn't work, try the direct approach
-    if (!balancesData || balanceError) {
-      return await fetchTopBalancesFallback();
+    if (balanceError || !balancesData) {
+      console.error("Error fetching balances:", balanceError);
+      return [];
     }
     
-    // Safely map the results with proper type checking
-    return Array.isArray(balancesData)
-      ? balancesData.map((item: any, index) => {
-          // Use optional chaining and nullish coalescing to safely access properties
-          const profileData = item.profiles || {};
-          return {
-            username: typeof profileData.username === 'string' ? profileData.username : 'Unknown User',
-            avatar_url: typeof profileData.avatar_url === 'string' ? profileData.avatar_url : undefined,
-            value: Number(item.balance || 0),
-            rank: index + 1
-          };
-        })
-      : [];
+    console.log("Balances data:", balancesData);
+    
+    // Get all profiles to match with the balance data
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url');
+      
+    if (profilesError) {
+      console.error("Error fetching profiles:", profilesError);
+    }
+    
+    // Create a profile map for quick lookups
+    const profileMap: Record<string, any> = {};
+    if (Array.isArray(profilesData)) {
+      profilesData.forEach(profile => {
+        if (profile.id) {
+          profileMap[profile.id] = profile;
+        }
+      });
+    }
+    
+    // Map the balance data to the expected format
+    return balancesData.map((item, index) => {
+      const profile = profileMap[item.id] || {};
+      return {
+        username: profile.username || 'User ' + item.id.substring(0, 8),
+        avatar_url: profile.avatar_url,
+        value: Number(item.balance || 0),
+        rank: index + 1
+      };
+    });
   } catch (error) {
-    console.error("Error fetching top balances:", error);
-    return await fetchTopBalancesFallback();
+    console.error("Error in fetchTopBalances:", error);
+    return [];
   }
 }
 
 /**
- * Fallback method to fetch top balances when the join doesn't work
+ * Removed the fetchTopBalancesFallback function as it's no longer needed
+ * with our simplified approach above.
  */
-async function fetchTopBalancesFallback(): Promise<LeaderboardEntry[]> {
-  try {
-    // Get balance data directly
-    const { data: directBalancesData } = await supabase
-      .from('user_balances')
-      .select('*')
-      .order('balance', { ascending: false })
-      .limit(5);
-    
-    console.log("Direct balances query:", directBalancesData);
-    
-    // Get profiles for mapping
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url');
-    
-    // Create a map of profile data by id for quick lookup
-    const profileMap = profilesData ? 
-      profilesData.reduce((acc: Record<string, any>, profile) => {
-        acc[profile.id] = profile;
-        return acc;
-      }, {}) : {};
-    
-    return Array.isArray(directBalancesData)
-      ? directBalancesData.map((item: any, index) => {
-          const profile = profileMap[item.id] || {};
-          return {
-            username: profile.username || 'Unknown User',
-            avatar_url: profile.avatar_url || undefined,
-            value: Number(item.balance || 0),
-            rank: index + 1
-          };
-        })
-      : [];
-  } catch (error) {
-    console.error("Error in fallback method for top balances:", error);
-    return [];
-  }
-}

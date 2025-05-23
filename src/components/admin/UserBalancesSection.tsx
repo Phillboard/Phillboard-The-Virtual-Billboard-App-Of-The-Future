@@ -24,23 +24,41 @@ export function UserBalancesSection() {
         // Get all user balances
         const { data: balanceData, error: balanceError } = await supabase
           .from('user_balances')
-          .select('*');
+          .select('*')
+          .order('balance', { ascending: false });
         
-        if (balanceError) throw balanceError;
+        if (balanceError) {
+          console.error("Error fetching balances:", balanceError);
+          throw balanceError;
+        }
+        
+        console.log("Balance data:", balanceData);
         
         // Get all profiles
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('id, username');
           
-        if (profilesError) throw profilesError;
+        if (profilesError) {
+          console.error("Error fetching profiles:", profilesError);
+        }
+        
+        // Create a profile map for quick lookups
+        const profileMap: Record<string, any> = {};
+        if (Array.isArray(profilesData)) {
+          profilesData.forEach(profile => {
+            if (profile.id) {
+              profileMap[profile.id] = profile;
+            }
+          });
+        }
         
         // Merge the data
         const mergedData = (balanceData || []).map(balanceItem => {
-          const profile = profilesData?.find(p => p.id === balanceItem.id);
+          const profile = profileMap[balanceItem.id];
           return {
             id: balanceItem.id,
-            email: profile?.username || 'Unknown User',
+            email: profile?.username || `User ${balanceItem.id.substring(0, 8)}`,
             balance: Number(balanceItem.balance)
           };
         });
