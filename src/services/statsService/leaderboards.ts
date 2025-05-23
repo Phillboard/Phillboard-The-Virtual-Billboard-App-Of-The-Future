@@ -94,12 +94,18 @@ async function fetchTopBalances(): Promise<LeaderboardEntry[]> {
     }
     
     return Array.isArray(balancesData)
-      ? balancesData.map((item, index) => ({
-          username: item.profiles?.username || 'Unknown User',
-          avatar_url: item.profiles?.avatar_url || undefined,
-          value: Number(item.balance || 0),
-          rank: index + 1
-        }))
+      ? balancesData.map((item, index) => {
+          // Fix: Add type checking before accessing properties
+          const username = item.profiles?.username || 'Unknown User';
+          const avatar_url = item.profiles?.avatar_url || undefined;
+          
+          return {
+            username,
+            avatar_url,
+            value: Number(item.balance || 0),
+            rank: index + 1
+          };
+        })
       : [];
   } catch (error) {
     console.error("Error fetching top balances:", error);
