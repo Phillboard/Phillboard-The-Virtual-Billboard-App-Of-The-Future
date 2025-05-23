@@ -74,6 +74,7 @@ export type Database = {
           cost: number
           created_at: string
           id: string
+          original_creator_id: string | null
           phillboard_id: string
           user_id: string
         }
@@ -81,6 +82,7 @@ export type Database = {
           cost: number
           created_at?: string
           id?: string
+          original_creator_id?: string | null
           phillboard_id: string
           user_id: string
         }
@@ -88,6 +90,7 @@ export type Database = {
           cost?: number
           created_at?: string
           id?: string
+          original_creator_id?: string | null
           phillboard_id?: string
           user_id?: string
         }
