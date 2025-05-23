@@ -93,15 +93,14 @@ async function fetchTopBalances(): Promise<LeaderboardEntry[]> {
       return await fetchTopBalancesFallback();
     }
     
+    // Safely map the results with proper type checking
     return Array.isArray(balancesData)
-      ? balancesData.map((item, index) => {
-          // Fix: Add type checking before accessing properties
-          const username = item.profiles?.username || 'Unknown User';
-          const avatar_url = item.profiles?.avatar_url || undefined;
-          
+      ? balancesData.map((item: any, index) => {
+          // Use optional chaining and nullish coalescing to safely access properties
+          const profileData = item.profiles || {};
           return {
-            username,
-            avatar_url,
+            username: typeof profileData.username === 'string' ? profileData.username : 'Unknown User',
+            avatar_url: typeof profileData.avatar_url === 'string' ? profileData.avatar_url : undefined,
             value: Number(item.balance || 0),
             rank: index + 1
           };
