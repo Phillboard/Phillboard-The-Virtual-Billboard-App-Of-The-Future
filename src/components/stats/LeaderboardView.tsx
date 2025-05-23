@@ -49,7 +49,7 @@ export function LeaderboardView({ statsData, isLoading }: LeaderboardViewProps) 
       {/* Top Balances Leaderboard */}
       <LeaderboardList
         title="Highest User Balances"
-        entries={statsData.topBalances}
+        entries={statsData.topBalances || []}
         isLoading={isLoading}
         icon={Wallet}
         iconColor="text-purple-500"

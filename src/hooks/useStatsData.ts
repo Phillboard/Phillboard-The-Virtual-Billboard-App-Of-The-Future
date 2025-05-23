@@ -179,24 +179,102 @@ export function useStatsData(user: User | null) {
           : [];
 
         // Get users with highest balances - Fixed query
-        const { data: topBalancesData } = await supabase
+        // First get all user balances and join with profiles for username
+        const { data: topBalancesData, error: balanceError } = await supabase
           .from('user_balances')
-          .select('id, balance, profiles(username, avatar_url)')
+          .select(`
+            id,
+            balance,
+            profiles!user_balances_id_fkey (
+              username,
+              avatar_url
+            )
+          `)
           .order('balance', { ascending: false })
           .limit(5);
+
+        console.log("Top balances query result:", topBalancesData);
+        console.log("Balance error if any:", balanceError);
         
-        console.log("Top balances data:", topBalancesData); // Debug log
+        // If that doesn't work, try a more direct approach
+        if (!topBalancesData || balanceError) {
+          const { data: directBalancesData } = await supabase
+            .from('user_balances')
+            .select('*')
+            .order('balance', { ascending: false })
+            .limit(5);
+          
+          console.log("Direct balances query:", directBalancesData);
+          
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, username, avatar_url');
+          
+          // Create a map of profile data by id for quick lookup
+          const profileMap = profilesData ? 
+            profilesData.reduce((acc: Record<string, any>, profile) => {
+              acc[profile.id] = profile;
+              return acc;
+            }, {}) : {};
+          
+          const topBalances = Array.isArray(directBalancesData)
+            ? directBalancesData.map((item: any, index) => {
+                const profile = profileMap[item.id] || {};
+                return {
+                  username: profile.username || 'Unknown User',
+                  avatar_url: profile.avatar_url || undefined,
+                  value: Number(item.balance || 0),
+                  rank: index + 1
+                };
+              })
+            : [];
+          
+          console.log("Manually constructed top balances:", topBalances);
+          
+          // Get most edited phillboards
+          const { data: mostEditedData } = await supabase
+            .rpc('get_most_edited_phillboards', { limit_count: 5 });
+        
+          const mostEditedPhillboards = Array.isArray(mostEditedData)
+            ? mostEditedData.map((item: MostEditedPhillboard) => ({
+                id: item.phillboard_id,
+                title: item.title || 'Untitled',
+                username: item.username || 'Anonymous',
+                edits: Number(item.edit_count)
+              }))
+            : [];
+          
+          setStatsData({
+            totalPhillboards: phillboardsCount || 0,
+            totalUsers: usersCount || 0,
+            totalEdits: editsCount || 0,
+            totalMoneySpent,
+            userPhillboards,
+            userEdits,
+            userEarnings,
+            userSpent,
+            dailyPlacements,
+            topCreators,
+            topEditors,
+            topEarners,
+            topBalances,
+            mostEditedPhillboards
+          });
+
+          setIsLoading(false);
+          return;
+        }
         
         const topBalances = Array.isArray(topBalancesData)
           ? topBalancesData.map((item: any, index) => ({
-              username: item.profiles?.username || 'Anonymous',
+              username: item.profiles?.username || 'Unknown User',
               avatar_url: item.profiles?.avatar_url || undefined,
               value: Number(item.balance || 0),
               rank: index + 1
             }))
           : [];
           
-        console.log("Processed top balances:", topBalances); // Debug log
+        console.log("Processed top balances:", topBalances);
         
         // Get most edited phillboards
         const { data: mostEditedData } = await supabase
