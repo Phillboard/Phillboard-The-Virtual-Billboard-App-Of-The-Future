@@ -6,6 +6,9 @@ import { DialogActions } from "./DialogActions";
 import { usePhillboardEdit } from "./hooks/usePhillboardEdit";
 import { MapPin } from "../types";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatCurrency } from "@/components/stats/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
 interface EditPinDialogProps {
   isOpen: boolean;
@@ -28,7 +31,9 @@ export function EditPinDialog({
     selectedImage,
     setSelectedImage,
     isSubmitting,
-    handleUpdatePhillboard
+    handleUpdatePhillboard,
+    editCost,
+    editCount
   } = usePhillboardEdit({ 
     phillboard: selectedPin,
     onClose: () => onOpenChange(false),
@@ -52,6 +57,18 @@ export function EditPinDialog({
         <div className="space-y-4 py-4">
           <TaglineInput tagline={tagline} setTagline={setTagline} />
           <ImageSelector selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
+          
+          {editCost !== null && (
+            <Alert className="bg-black/40 border-white/10">
+              <Info className="h-4 w-4 text-cyan-400" />
+              <AlertDescription>
+                Cost to edit: <span className="text-cyan-400 font-bold">{formatCurrency(editCost)}</span>
+                <p className="text-xs text-gray-400 mt-1">
+                  This phillboard has been edited {editCount} time(s)
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
         
         <DialogActions 

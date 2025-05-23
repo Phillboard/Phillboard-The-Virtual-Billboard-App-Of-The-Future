@@ -77,10 +77,14 @@ export function usePhillboardEdit({
       // Process the edit using our service function
       const result = await editPhillboard(phillboard.id, user.id, updates);
       
+      if (!result.success) {
+        throw new Error(result.message || "Failed to edit phillboard");
+      }
+      
       // Create the updated visual pin for the map
       const updatedPin: MapPin = {
         ...phillboard,
-        ...result.data
+        ...updates
       };
 
       onUpdatePin(updatedPin);

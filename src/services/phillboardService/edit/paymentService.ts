@@ -27,14 +27,16 @@ export const processEditPayment = async (
     }
     
     // Check if user has enough balance
-    if (!userBalance || userBalance.balance < editCost) {
+    if (!userBalance || Number(userBalance.balance) < Number(editCost)) {
       throw new Error(`Insufficient funds. You need $${editCost.toFixed(2)} to edit this phillboard.`);
     }
     
     console.log(`User has sufficient balance: $${userBalance.balance}. Deducting $${editCost}`);
     
-    // Update user's balance (deduct the cost)
+    // Update user's balance (deduct the cost) - ensure numeric operations
     const newBalance = Number(userBalance.balance) - Number(editCost);
+    console.log(`New balance will be: $${newBalance}`);
+    
     const { error: updateError } = await supabase
       .from('user_balances')
       .update({ 
@@ -44,8 +46,11 @@ export const processEditPayment = async (
       .eq('id', userId);
       
     if (updateError) {
+      console.error("Error updating balance:", updateError);
       throw handleServiceError(updateError, "Payment processing error. Please try again.");
     }
+    
+    console.log("Balance updated successfully");
     
     // Get the original creator from the database
     const { data: originalPhillboard, error: phillboardError } = await supabase

@@ -24,17 +24,22 @@ export const editPhillboard = async (
   updates: PhillboardUpdateData
 ): Promise<EditPhillboardResult> => {
   try {
+    console.log("Starting phillboard edit process:", { phillboardId, userId });
+    
     // Calculate the cost
     const editCost = await calculateEditCost(phillboardId, userId);
+    console.log(`Edit will cost: $${editCost}`);
     
     // Process the payment
     const paymentResult = await processEditPayment(editCost, userId, phillboardId);
+    console.log("Payment processed:", paymentResult);
     
     // Record this edit in history
     await recordEditHistory(phillboardId, userId, editCost);
     
     // Pay the original creator if applicable
     if (paymentResult.originalCreatorId) {
+      console.log("Paying original creator:", paymentResult.originalCreatorId);
       await payOriginalCreator(paymentResult.originalCreatorId, userId, editCost);
     }
     
@@ -48,6 +53,7 @@ export const editPhillboard = async (
     };
   } catch (error) {
     // Use our centralized error handler
+    console.error("Error in editPhillboard:", error);
     const handledError = handleServiceError(
       error, 
       "An error occurred while editing the phillboard"
