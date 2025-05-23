@@ -91,6 +91,8 @@ export function EditPinDialog({
           onCancel={handleCloseDialog}
           onSubmit={handleUpdatePhillboard}
           isSubmitting={isSubmitting}
+          submitText="Save Edit"
+          submittingText="Saving..."
         />
       </DialogContent>
     </Dialog>

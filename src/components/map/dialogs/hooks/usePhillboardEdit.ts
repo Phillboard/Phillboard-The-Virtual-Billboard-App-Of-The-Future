@@ -30,18 +30,30 @@ export function usePhillboardEdit({
   const [editCount, setEditCount] = useState<number>(0);
   const { user } = useAuth();
   
+  // Reset form data when phillboard changes
+  useEffect(() => {
+    setTagline(phillboard.title);
+    setSelectedImage(phillboard.image_type?.split("-")[1] || "1");
+    setEditCost(null);
+    setEditCount(0);
+  }, [phillboard.id, phillboard.title, phillboard.image_type]);
+  
   // Calculate the cost of editing this phillboard and get edit count
   useEffect(() => {
     const fetchEditData = async () => {
       if (!user) return;
       
       try {
+        console.log("Fetching edit data for phillboard:", phillboard.id);
+        
         // Get edit count
         const count = await getEditCount(phillboard.id);
+        console.log("Edit count:", count);
         setEditCount(count);
         
         // Calculate cost based on count
         const cost = await calculateEditCost(phillboard.id, user.id);
+        console.log("Edit cost:", cost);
         setEditCost(cost);
       } catch (error) {
         console.error("Failed to calculate edit cost:", error);
