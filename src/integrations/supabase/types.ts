@@ -162,6 +162,42 @@ export type Database = {
         Args: { p_phillboard_id: string }
         Returns: number
       }
+      get_most_edited_phillboards: {
+        Args: { limit_count?: number }
+        Returns: {
+          phillboard_id: string
+          title: string
+          username: string
+          edit_count: number
+        }[]
+      }
+      get_top_creators: {
+        Args: { limit_count?: number }
+        Returns: {
+          user_id: string
+          username: string
+          avatar_url: string
+          phillboard_count: number
+        }[]
+      }
+      get_top_earners: {
+        Args: { limit_count?: number }
+        Returns: {
+          user_id: string
+          username: string
+          avatar_url: string
+          earnings: number
+        }[]
+      }
+      get_top_editors: {
+        Args: { limit_count?: number }
+        Returns: {
+          user_id: string
+          username: string
+          avatar_url: string
+          edit_count: number
+        }[]
+      }
       record_edit_history: {
         Args: { p_phillboard_id: string; p_user_id: string; p_cost: number }
         Returns: boolean

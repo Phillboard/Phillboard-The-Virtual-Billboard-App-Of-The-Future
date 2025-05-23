@@ -15,7 +15,7 @@ import {
   Trophy,
   ArrowDownLeft
 } from "lucide-react";
-import { BarChart, LineChart } from "@/components/ui/barChart";
+import { BarChart } from "@/components/ui/barChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Type definition for leaderboard entries
@@ -46,6 +46,35 @@ interface StatsData {
     username: string;
     edits: number;
   }[];
+}
+
+// Type definitions for database function results
+interface TopCreator {
+  user_id: string;
+  username: string | null;
+  avatar_url: string | null;
+  phillboard_count: number;
+}
+
+interface TopEditor {
+  user_id: string;
+  username: string | null;
+  avatar_url: string | null;
+  edit_count: number;
+}
+
+interface TopEarner {
+  user_id: string;
+  username: string | null;
+  avatar_url: string | null;
+  earnings: number;
+}
+
+interface MostEditedPhillboard {
+  phillboard_id: string;
+  title: string | null;
+  username: string | null;
+  edit_count: number;
 }
 
 export function StatsScreen() {
@@ -180,50 +209,46 @@ export function StatsScreen() {
         
         // Get top creators (users who placed the most phillboards)
         const { data: topCreatorsData } = await supabase
-          .rpc('get_top_creators', { limit_count: 5 })
-          .select('*');
+          .rpc<TopCreator>('get_top_creators', { limit_count: 5 });
         
         const topCreators: LeaderboardEntry[] = topCreatorsData?.map((item, index) => ({
           username: item.username || 'Anonymous',
-          avatar_url: item.avatar_url,
-          value: item.phillboard_count,
+          avatar_url: item.avatar_url || undefined,
+          value: Number(item.phillboard_count),
           rank: index + 1
         })) || [];
         
         // Get top editors (users who made the most edits)
         const { data: topEditorsData } = await supabase
-          .rpc('get_top_editors', { limit_count: 5 })
-          .select('*');
+          .rpc<TopEditor>('get_top_editors', { limit_count: 5 });
         
         const topEditors: LeaderboardEntry[] = topEditorsData?.map((item, index) => ({
           username: item.username || 'Anonymous',
-          avatar_url: item.avatar_url,
-          value: item.edit_count,
+          avatar_url: item.avatar_url || undefined,
+          value: Number(item.edit_count),
           rank: index + 1
         })) || [];
         
         // Get top earners (users who earned the most money)
         const { data: topEarnersData } = await supabase
-          .rpc('get_top_earners', { limit_count: 5 })
-          .select('*');
+          .rpc<TopEarner>('get_top_earners', { limit_count: 5 });
         
         const topEarners: LeaderboardEntry[] = topEarnersData?.map((item, index) => ({
           username: item.username || 'Anonymous',
-          avatar_url: item.avatar_url,
-          value: parseFloat(item.earnings || 0),
+          avatar_url: item.avatar_url || undefined,
+          value: Number(item.earnings || 0),
           rank: index + 1
         })) || [];
         
         // Get most edited phillboards
         const { data: mostEditedData } = await supabase
-          .rpc('get_most_edited_phillboards', { limit_count: 5 })
-          .select('*');
+          .rpc<MostEditedPhillboard>('get_most_edited_phillboards', { limit_count: 5 });
         
         const mostEditedPhillboards = mostEditedData?.map(item => ({
           id: item.phillboard_id,
           title: item.title || 'Untitled',
           username: item.username || 'Anonymous',
-          edits: item.edit_count
+          edits: Number(item.edit_count)
         })) || [];
         
         setStatsData({
@@ -259,7 +284,7 @@ export function StatsScreen() {
   
   // Format currency helper
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormatter('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
