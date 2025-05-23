@@ -211,45 +211,45 @@ export function StatsScreen() {
         const { data: topCreatorsData } = await supabase
           .rpc<TopCreator>('get_top_creators', { limit_count: 5 });
         
-        const topCreators: LeaderboardEntry[] = topCreatorsData?.map((item, index) => ({
+        const topCreators: LeaderboardEntry[] = topCreatorsData ? topCreatorsData.map((item, index) => ({
           username: item.username || 'Anonymous',
           avatar_url: item.avatar_url || undefined,
           value: Number(item.phillboard_count),
           rank: index + 1
-        })) || [];
+        })) : [];
         
         // Get top editors (users who made the most edits)
         const { data: topEditorsData } = await supabase
           .rpc<TopEditor>('get_top_editors', { limit_count: 5 });
         
-        const topEditors: LeaderboardEntry[] = topEditorsData?.map((item, index) => ({
+        const topEditors: LeaderboardEntry[] = topEditorsData ? topEditorsData.map((item, index) => ({
           username: item.username || 'Anonymous',
           avatar_url: item.avatar_url || undefined,
           value: Number(item.edit_count),
           rank: index + 1
-        })) || [];
+        })) : [];
         
         // Get top earners (users who earned the most money)
         const { data: topEarnersData } = await supabase
           .rpc<TopEarner>('get_top_earners', { limit_count: 5 });
         
-        const topEarners: LeaderboardEntry[] = topEarnersData?.map((item, index) => ({
+        const topEarners: LeaderboardEntry[] = topEarnersData ? topEarnersData.map((item, index) => ({
           username: item.username || 'Anonymous',
           avatar_url: item.avatar_url || undefined,
           value: Number(item.earnings || 0),
           rank: index + 1
-        })) || [];
+        })) : [];
         
         // Get most edited phillboards
         const { data: mostEditedData } = await supabase
           .rpc<MostEditedPhillboard>('get_most_edited_phillboards', { limit_count: 5 });
         
-        const mostEditedPhillboards = mostEditedData?.map(item => ({
+        const mostEditedPhillboards = mostEditedData ? mostEditedData.map(item => ({
           id: item.phillboard_id,
           title: item.title || 'Untitled',
           username: item.username || 'Anonymous',
           edits: Number(item.edit_count)
-        })) || [];
+        })) : [];
         
         setStatsData({
           totalPhillboards: phillboardsCount || 0,
@@ -284,7 +284,7 @@ export function StatsScreen() {
   
   // Format currency helper
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormatter('en-US', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
