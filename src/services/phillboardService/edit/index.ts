@@ -24,7 +24,7 @@ export const editPhillboard = async (
   updates: PhillboardUpdateData
 ): Promise<EditPhillboardResult> => {
   try {
-    console.log("Starting phillboard edit process:", { phillboardId, userId });
+    console.log("Starting phillboard edit process:", { phillboardId, userId, updates });
     
     // Calculate the cost
     const editCost = await calculateEditCost(phillboardId, userId);
@@ -44,13 +44,24 @@ export const editPhillboard = async (
     }
     
     // Update the phillboard
-    const updatedPhillboard = await updatePhillboardInDatabase(phillboardId, updates);
-    
-    return {
-      success: true,
-      data: updatedPhillboard,
-      message: paymentResult.message
-    };
+    try {
+      const updatedPhillboard = await updatePhillboardInDatabase(phillboardId, updates);
+      console.log("Phillboard successfully updated", updatedPhillboard);
+      
+      return {
+        success: true,
+        data: updatedPhillboard,
+        message: paymentResult.message
+      };
+    } catch (updateError) {
+      console.error("Failed to update phillboard:", updateError);
+      // Payment was successful but update failed
+      return {
+        success: false,
+        message: "Payment processed but phillboard update failed. Please try again.",
+        error: updateError
+      };
+    }
   } catch (error) {
     // Use our centralized error handler
     console.error("Error in editPhillboard:", error);

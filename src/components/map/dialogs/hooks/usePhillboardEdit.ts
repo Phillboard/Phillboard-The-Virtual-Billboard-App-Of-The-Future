@@ -74,10 +74,13 @@ export function usePhillboardEdit({
         placement_type: placementType,
       };
       
+      console.log("Sending phillboard update with:", updates);
+      
       // Process the edit using our service function
       const result = await editPhillboard(phillboard.id, user.id, updates);
       
       if (!result.success) {
+        console.error("Edit failed with result:", result);
         throw new Error(result.message || "Failed to edit phillboard");
       }
       
