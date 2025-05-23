@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,6 +8,7 @@ import { MapPin } from "./map/types";
 import { Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
+import { UserProfileDialog } from "./profile/UserProfileDialog";
 
 interface Phillboard {
   id: string;
@@ -26,6 +28,8 @@ export function FeedScreen() {
   const { user, isAdmin } = useAuth();
   const [selectedPin, setSelectedPin] = useState<MapPin | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [selectedUsername, setSelectedUsername] = useState<string>("");
   
   // Fetch initial data and set up realtime subscription
   useEffect(() => {
@@ -140,6 +144,12 @@ export function FeedScreen() {
     setIsDeleteDialogOpen(true);
   };
 
+  // Handle username click to open profile dialog
+  const handleUsernameClick = (username: string) => {
+    setSelectedUsername(username);
+    setIsProfileDialogOpen(true);
+  };
+
   return (
     <div className="screen p-4 pb-24 pt-8 h-screen overflow-y-auto">
       <h1 className="text-2xl font-bold mb-6 text-cyan-400">Recent Activity</h1>
@@ -180,7 +190,13 @@ export function FeedScreen() {
               </div>
               
               <p className="text-sm text-gray-300 mb-2">
-                by <span className="text-fuchsia-500">@{phillboard.username}</span>
+                by{" "}
+                <button 
+                  onClick={() => handleUsernameClick(phillboard.username)}
+                  className="text-fuchsia-500 hover:underline focus:outline-none"
+                >
+                  @{phillboard.username}
+                </button>
               </p>
               
               <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
@@ -226,6 +242,14 @@ export function FeedScreen() {
           setSelectedPin(null);
         }}
       />
+      
+      {/* User profile dialog */}
+      <UserProfileDialog
+        isOpen={isProfileDialogOpen}
+        onOpenChange={setIsProfileDialogOpen}
+        username={selectedUsername}
+      />
     </div>
   );
 }
+

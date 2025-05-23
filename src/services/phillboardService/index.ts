@@ -10,4 +10,4 @@ export {
   calculateEditCost,
   getEditCount
 } from './edit';
-
+export { handleServiceError, handleServiceErrorWithToast } from './edit/errorHandling';

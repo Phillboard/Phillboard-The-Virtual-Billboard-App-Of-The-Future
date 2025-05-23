@@ -17,11 +17,16 @@ import {
   User,
   Home,
   MonitorPlay,
+  Info,
 } from "lucide-react";
 import { EditPinDialog } from "./dialogs/EditPinDialog";
 import { DeletePinDialog } from "./dialogs/DeletePinDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { MapPin as MapPinType } from "./types";
+import { useState as useReactState } from "react";
+import { UserProfileDialog } from "../profile/UserProfileDialog";
+import { calculateEditCost, getEditCount } from "@/services/phillboardService";
+import { useEffect } from "react";
 
 interface PinPopupProps {
   selectedPin: MapPinType | null;
@@ -38,7 +43,31 @@ export function PinPopup({
 }: PinPopupProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [editCost, setEditCost] = useState<number | null>(null);
+  const [editCount, setEditCount] = useState<number>(0);
   const { user, isAdmin } = useAuth();
+  
+  useEffect(() => {
+    // Fetch edit cost and count when a pin is selected
+    const fetchEditData = async () => {
+      if (!selectedPin || !user) return;
+      
+      try {
+        // Get edit count
+        const count = await getEditCount(selectedPin.id);
+        setEditCount(count);
+        
+        // Calculate cost based on count
+        const cost = await calculateEditCost(selectedPin.id, user.id);
+        setEditCost(cost);
+      } catch (error) {
+        console.error("Failed to fetch edit data:", error);
+      }
+    };
+    
+    fetchEditData();
+  }, [selectedPin, user]);
   
   if (!selectedPin) return null;
   
@@ -72,7 +101,13 @@ export function PinPopup({
         <DialogHeader>
           <DialogTitle className="text-cyan-400">{selectedPin.title}</DialogTitle>
           <DialogDescription>
-            Placed by <span className="text-fuchsia-500">@{selectedPin.username}</span>
+            Placed by{" "}
+            <button 
+              className="text-fuchsia-500 hover:underline focus:outline-none"
+              onClick={() => setIsProfileDialogOpen(true)}
+            >
+              @{selectedPin.username}
+            </button>
           </DialogDescription>
         </DialogHeader>
         
@@ -96,6 +131,18 @@ export function PinPopup({
             <div className="mt-2 p-3 bg-gray-900/50 rounded-md">
               <p className="text-sm italic text-gray-300">
                 "{selectedPin.content}"
+              </p>
+            </div>
+          )}
+          
+          {user && editCost !== null && (
+            <div className="mt-2 p-3 bg-gray-900/50 rounded-md">
+              <div className="flex items-center gap-2 text-xs text-gray-300">
+                <Info size={14} className="text-cyan-400" />
+                <span>Edit cost: <span className="text-cyan-400 font-medium">${editCost.toFixed(2)}</span></span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1 pl-5">
+                This phillboard has been edited {editCount} time(s)
               </p>
             </div>
           )}
@@ -127,7 +174,7 @@ export function PinPopup({
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         selectedPin={selectedPin}
-        onUpdatePin={onPinUpdate}
+        onUpdatePin={onUpdatePin}
       />
       
       <DeletePinDialog 
@@ -136,6 +183,13 @@ export function PinPopup({
         selectedPin={selectedPin}
         onDeleteSuccess={onPinDelete}
       />
+      
+      <UserProfileDialog
+        isOpen={isProfileDialogOpen}
+        onOpenChange={setIsProfileDialogOpen}
+        username={selectedPin.username}
+      />
     </Dialog>
   );
 }
+
