@@ -28,9 +28,7 @@ export function EditPinDialog({
     selectedImage,
     setSelectedImage,
     isSubmitting,
-    handleUpdatePhillboard,
-    editCost,
-    editCount
+    handleUpdatePhillboard
   } = usePhillboardEdit({ 
     phillboard: selectedPin,
     onClose: () => onOpenChange(false),
@@ -54,21 +52,6 @@ export function EditPinDialog({
         <div className="space-y-4 py-4">
           <TaglineInput tagline={tagline} setTagline={setTagline} />
           <ImageSelector selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
-          
-          {user && editCost !== null && (
-            <div className="px-1 py-2 bg-slate-900/50 rounded-md border border-white/10">
-              <p className="flex justify-between items-center text-sm text-gray-400">
-                <span>Edit cost:</span>
-                <span className="text-lg font-medium text-neon-cyan">${editCost.toFixed(2)}</span>
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                This phillboard has been edited {editCount} time(s). Cost doubles with each edit.
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Original creators earn 50% when others edit.
-              </p>
-            </div>
-          )}
         </div>
         
         <DialogActions 
