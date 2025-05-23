@@ -8,7 +8,8 @@ import { MapPin } from "../types";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/components/stats/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { Info, AlertTriangle } from "lucide-react";
+import { useState } from "react";
 
 interface EditPinDialogProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export function EditPinDialog({
   onUpdatePin
 }: EditPinDialogProps) {
   const { user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
   
   const {
     tagline,
@@ -36,11 +38,16 @@ export function EditPinDialog({
     editCount
   } = usePhillboardEdit({ 
     phillboard: selectedPin,
-    onClose: () => onOpenChange(false),
-    onUpdatePin
+    onClose: () => {
+      setError(null);
+      onOpenChange(false);
+    },
+    onUpdatePin,
+    onError: (errorMsg) => setError(errorMsg)
   });
   
   const handleCloseDialog = () => {
+    setError(null);
     onOpenChange(false);
   };
   
@@ -66,6 +73,15 @@ export function EditPinDialog({
                 <p className="text-xs text-gray-400 mt-1">
                   This phillboard has been edited {editCount} time(s)
                 </p>
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {error && (
+            <Alert className="bg-black/40 border-red-500/50">
+              <AlertTriangle className="h-4 w-4 text-red-400" />
+              <AlertDescription className="text-red-300">
+                {error}
               </AlertDescription>
             </Alert>
           )}

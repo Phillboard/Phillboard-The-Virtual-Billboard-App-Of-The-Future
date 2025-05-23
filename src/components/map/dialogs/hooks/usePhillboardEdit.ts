@@ -14,10 +14,12 @@ export function usePhillboardEdit({
   phillboard,
   onClose,
   onUpdatePin,
+  onError
 }: {
   phillboard: MapPin;
   onClose: () => void;
   onUpdatePin: (updatedPin: MapPin) => void;
+  onError?: (error: string) => void;
 }) {
   const [tagline, setTagline] = useState(phillboard.title);
   const [selectedImage, setSelectedImage] = useState(
@@ -52,7 +54,9 @@ export function usePhillboardEdit({
 
   const handleUpdatePhillboard = async () => {
     if (!tagline) {
-      toast.error("Please enter a tagline for your phillboard");
+      const errorMsg = "Please enter a tagline for your phillboard";
+      if (onError) onError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -61,7 +65,9 @@ export function usePhillboardEdit({
     try {
       // Check if user is authenticated
       if (!user) {
-        toast.error("You must be logged in to edit a phillboard");
+        const errorMsg = "You must be logged in to edit a phillboard";
+        if (onError) onError(errorMsg);
+        toast.error(errorMsg);
         setIsSubmitting(false);
         return;
       }
@@ -81,7 +87,9 @@ export function usePhillboardEdit({
       
       if (!result.success) {
         console.error("Edit failed with result:", result);
-        throw new Error(result.message || "Failed to edit phillboard");
+        const errorMsg = result.message || "Failed to edit phillboard";
+        if (onError) onError(errorMsg);
+        throw new Error(errorMsg);
       }
       
       // Create the updated visual pin for the map
@@ -97,8 +105,10 @@ export function usePhillboardEdit({
     } catch (error) {
       console.error("Error in handleUpdatePhillboard:", error);
       if (error instanceof Error) {
+        if (onError) onError(error.message);
         toast.error(error.message);
       } else {
+        if (onError) onError("Failed to update phillboard. Please try again.");
         toast.error("Failed to update phillboard. Please try again.");
       }
     } finally {
