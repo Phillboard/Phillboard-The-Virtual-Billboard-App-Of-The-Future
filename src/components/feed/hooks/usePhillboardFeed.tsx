@@ -31,7 +31,11 @@ export function usePhillboardFeed() {
         if (data) {
           // Process the data to include edit information
           const processedData = data.map(board => {
-            const editCount = board.phillboards_edit_history?.count || 0;
+            // Fix: The phillboards_edit_history returns an array, so we need to 
+            // access its first item to get the count
+            const editHistory = board.phillboards_edit_history as any[];
+            const editCount = editHistory && editHistory.length > 0 ? editHistory[0].count : 0;
+            
             return {
               ...board,
               edit_count: editCount,
