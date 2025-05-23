@@ -26,6 +26,7 @@ import { useState as useReactState } from "react";
 import { UserProfileDialog } from "../profile/UserProfileDialog";
 import { calculateEditCost, getEditCount } from "@/services/phillboardService";
 import { useEffect } from "react";
+import { formatCurrency } from "@/components/stats/utils";
 
 interface PinPopupProps {
   selectedPin: MapPinType | null;
@@ -138,7 +139,7 @@ export function PinPopup({
             <div className="mt-2 p-3 bg-gray-900/50 rounded-md">
               <div className="flex items-center gap-2 text-xs text-gray-300">
                 <Info size={14} className="text-cyan-400" />
-                <span>Edit cost: <span className="text-cyan-400 font-medium">${editCost.toFixed(2)}</span></span>
+                <span>Edit cost: <span className="text-cyan-400 font-medium">{formatCurrency(editCost)}</span></span>
               </div>
               <p className="text-xs text-gray-400 mt-1 pl-5">
                 This phillboard has been edited {editCount} time(s)

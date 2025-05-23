@@ -34,10 +34,11 @@ export const processEditPayment = async (
     console.log(`User has sufficient balance: $${userBalance.balance}. Deducting $${editCost}`);
     
     // Update user's balance (deduct the cost)
+    const newBalance = Number(userBalance.balance) - Number(editCost);
     const { error: updateError } = await supabase
       .from('user_balances')
       .update({ 
-        balance: userBalance.balance - editCost,
+        balance: newBalance,
         updated_at: new Date().toISOString()
       })
       .eq('id', userId);
@@ -78,7 +79,7 @@ export const payOriginalCreator = async (originalCreatorId: string, userId: stri
     return { success: true };
   }
   
-  const creatorShare = editCost * 0.5;
+  const creatorShare = Number(editCost) * 0.5;
   
   try {
     console.log(`Paying original creator ${originalCreatorId} share of $${creatorShare}`);
@@ -96,7 +97,7 @@ export const payOriginalCreator = async (originalCreatorId: string, userId: stri
       return { success: false, error: creatorUpdateError };
     } else {
       console.log("Original creator payment successful:", data);
-      toast.info(`The original creator earned $${creatorShare.toFixed(2)} from your edit.`);
+      toast.info(`The original creator earned ${creatorShare.toFixed(2)} from your edit.`);
       return { success: true };
     }
   } catch (err) {
