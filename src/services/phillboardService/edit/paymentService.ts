@@ -57,9 +57,11 @@ export const processEditPayment = async (
       throw handleServiceError(phillboardError, "Failed to get phillboard details.");
     }
     
+    const originalCreatorId = originalPhillboard?.user_id !== userId ? originalPhillboard?.user_id : null;
+    
     return {
       success: true,
-      originalCreatorId: originalPhillboard?.user_id,
+      originalCreatorId,
       message: `Edited phillboard for $${editCost.toFixed(2)}`
     };
   } catch (error) {

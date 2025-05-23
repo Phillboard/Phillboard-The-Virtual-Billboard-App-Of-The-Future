@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,30 +37,47 @@ export function UserBalance() {
         // Get phillboard count
         const phillboardCount = await getUserPhillboardCount(user.id);
         
-        // Calculate total earned and spent (from database)
-        // For now, we'll use a simplified version where:
-        // - Each user starts with $300
-        // - Total spent = 300 + total earned - current balance
-        const initialBalance = 300; // Users get $300 when they sign up
-        
-        // Get earnings data - this would ideally come from a transactions table
-        // For now, let's query the phillboards table to estimate earnings
-        const { data: earnings, error: earningsError } = await supabase
-          .from('phillboards')
-          .select('id')
+        // Calculate earnings from edited phillboards (only when others edit your phillboards)
+        // Query the edit history to get earnings
+        const { data: editEarnings, error: earningsError } = await supabase
+          .from('phillboards_edit_history')
+          .select('phillboard_id, cost')
           .eq('user_id', user.id);
-          
-        // Simplistic calculation - in real app would use transactions table
-        const totalEarned = earnings ? earnings.length : 0; // $1 per phillboard as base earnings
+
+        // Query to get placements where user is credited as original creator
+        const { data: creatorEarnings, error: creatorError } = await supabase
+          .from('phillboards_edit_history')
+          .select('cost')
+          .neq('user_id', user.id)
+          .eq('original_creator_id', user.id);
+
+        // Sum up earnings (50% of edit costs from others editing your phillboards)
+        let totalEarned = 0;
+        if (creatorEarnings && creatorEarnings.length > 0) {
+          totalEarned = creatorEarnings.reduce((sum, item) => sum + (Number(item.cost) * 0.5), 0);
+        }
         
-        // Calculate total spent based on initial balance, earnings and current balance
-        const totalSpent = initialBalance + totalEarned - (userBalance || 0);
+        // Calculate total spent on placements and edits
+        // Query all edits by this user
+        const { data: userEdits, error: editsError } = await supabase
+          .from('phillboards_edit_history')
+          .select('cost')
+          .eq('user_id', user.id);
+
+        // Sum up what user has spent on edits
+        let totalSpent = 0;
+        if (userEdits && userEdits.length > 0) {
+          totalSpent = userEdits.reduce((sum, item) => sum + Number(item.cost), 0);
+        }
+        
+        // Add cost of phillboard placements ($1 each)
+        totalSpent += phillboardCount;
         
         setUserStats({
           balance: userBalance || 0,
           totalPlaced: phillboardCount || 0,
           totalEarned: totalEarned || 0,
-          totalSpent: totalSpent > 0 ? totalSpent : 0
+          totalSpent: totalSpent || 0
         });
       } catch (error) {
         console.error("Error fetching stats:", error);

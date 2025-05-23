@@ -53,12 +53,23 @@ export const recordEditHistory = async (
   editCost: number
 ) => {
   try {
-    // Use the record_edit_history database function
+    // Get original creator ID to store in the edit history
+    const { data: phillboard, error: phillboardError } = await supabase
+      .from("phillboards")
+      .select("user_id")
+      .eq("id", String(phillboardId))
+      .single();
+
+    const originalCreatorId = phillboard?.user_id;
+    
+    // Insert a record in the edit history
     const { data, error } = await supabase
-      .rpc('record_edit_history', {
-        p_phillboard_id: String(phillboardId),
-        p_user_id: userId,
-        p_cost: editCost
+      .from('phillboards_edit_history')
+      .insert({
+        phillboard_id: String(phillboardId),
+        user_id: userId,
+        cost: editCost,
+        original_creator_id: originalCreatorId !== userId ? originalCreatorId : null
       });
       
     if (error) {

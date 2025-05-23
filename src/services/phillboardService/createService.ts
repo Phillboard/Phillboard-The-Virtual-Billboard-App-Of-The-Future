@@ -116,6 +116,21 @@ async function processPhillboardTransaction(
       }
     }
     
+    // Record this placement in history for earnings tracking
+    try {
+      await supabase
+        .from('phillboards_edit_history')
+        .insert({
+          phillboard_id: 'new-placement', // Temporary ID, will be replaced after phillboard creation
+          user_id: userId,
+          cost: cost,
+          original_creator_id: originalCreatorId
+        });
+    } catch (err) {
+      console.error("Failed to record placement history:", err);
+      // Non-critical, continue with placement
+    }
+    
     return true;
   } catch (err) {
     console.error("Error processing transaction:", err);
@@ -198,6 +213,20 @@ export async function createPhillboard(phillboard: Omit<MapPin, 'id' | 'distance
       console.error("No data returned from phillboard creation");
       toast.error("Failed to create phillboard");
       throw new Error("Failed to create phillboard");
+    }
+    
+    // Update the history record with the actual phillboard ID
+    if (data[0].id) {
+      try {
+        await supabase
+          .from('phillboards_edit_history')
+          .update({ phillboard_id: data[0].id })
+          .eq('phillboard_id', 'new-placement')
+          .eq('user_id', session.user.id);
+      } catch (err) {
+        console.error("Failed to update placement history with ID:", err);
+        // Non-critical error, continue
+      }
     }
     
     console.log("Created phillboard successfully:", data[0]);
