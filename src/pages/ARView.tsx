@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import 'webxr-polyfill';
@@ -65,13 +64,17 @@ const ARView = () => {
     navigate('/');
   };
   
+  const handleTryDemo = () => {
+    navigate('/', { state: { showARDemo: true } });
+  };
+  
   const toggleViewMode = () => {
     setViewMode(viewMode === ARViewMode.HUMAN ? ARViewMode.BILLBOARD : ARViewMode.HUMAN);
   };
   
   // Early exit if WebXR is not supported
   if (arSupported === false) {
-    return <UnsupportedARView onBack={handleBack} />;
+    return <UnsupportedARView onBack={handleBack} onTryDemo={handleTryDemo} />;
   }
   
   return (
@@ -104,14 +107,6 @@ const ARView = () => {
           <ARSetup viewMode={viewMode} />
           <ARContent pin={pin} viewMode={viewMode} />
         </Canvas>
-        
-        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10">
-          {arSupported === null ? (
-            <div className="bg-black/40 text-white/50 border border-white/10 py-2 px-4 rounded-md">
-              Checking AR Support...
-            </div>
-          ) : null}
-        </div>
       </div>
     </div>
   );
