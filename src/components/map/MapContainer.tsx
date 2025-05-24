@@ -4,6 +4,8 @@ import { MapBackground } from "./MapBackground";
 import { LocationHeader } from "./LocationHeader";
 import { AdminModeToggle } from "./AdminModeToggle";
 import { PinPopup } from "./PinPopup";
+import { SearchAndFilter } from "../search/SearchAndFilter";
+import { usePhillboardFiltering } from "@/hooks/usePhillboardFiltering";
 
 interface MapContainerProps {
   isLoading: boolean;
@@ -34,14 +36,36 @@ export function MapContainer({
   onToggleAdminMode,
   userIsAdmin
 }: MapContainerProps) {
+  const {
+    filteredItems: filteredPins,
+    setSearchQuery,
+    setFilters,
+    hasActiveFilters
+  } = usePhillboardFiltering(mapPins);
+
   return (
     <>
-      {/* Map background with pins */}
+      {/* Search and Filter Controls */}
+      <div className="absolute top-16 left-4 right-4 z-10">
+        <SearchAndFilter
+          onSearch={setSearchQuery}
+          onFilterChange={setFilters}
+          searchPlaceholder="Search phillboards on map..."
+        />
+        
+        {hasActiveFilters && (
+          <div className="mt-2 text-sm text-white bg-black/60 rounded px-2 py-1">
+            Showing {filteredPins.length} of {mapPins.length} phillboards
+          </div>
+        )}
+      </div>
+
+      {/* Map background with filtered pins */}
       <MapBackground
         isLoading={isLoading}
         error={error}
         userLocation={userLocation}
-        mapPins={mapPins}
+        mapPins={filteredPins}
         onPinSelect={onPinSelect}
         onMapClick={onMapClick}
         isAdminMode={isAdminMode}
@@ -51,8 +75,8 @@ export function MapContainer({
       <LocationHeader
         isLoading={isLoading}
         userLocation={userLocation}
-        pinsCount={mapPins.length}
-        nearbyRadius={0} // We're not using a fixed radius anymore
+        pinsCount={filteredPins.length}
+        nearbyRadius={0}
       />
 
       {/* Admin mode toggle button */}

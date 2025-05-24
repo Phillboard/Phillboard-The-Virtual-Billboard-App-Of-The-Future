@@ -6,6 +6,8 @@ import { LoadingState } from "./LoadingState";
 import { EmptyState } from "./EmptyState";
 import { DeletePinDialog } from "../map/dialogs/DeletePinDialog";
 import { UserProfileDialog } from "../profile/UserProfileDialog";
+import { SearchAndFilter } from "../search/SearchAndFilter";
+import { usePhillboardFiltering } from "@/hooks/usePhillboardFiltering";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { ActivityItem } from "./ActivityItem";
@@ -26,6 +28,18 @@ export function FeedContent({ phillboards, isLoading, activityFeed = [] }: FeedC
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [selectedUsername, setSelectedUsername] = useState<string>("");
+  
+  // Use filtering hook for the appropriate data source
+  const dataToFilter = activityFeed && activityFeed.length > 0 
+    ? activityFeed.map(activity => activity.phillboard)
+    : phillboards;
+    
+  const {
+    filteredItems,
+    setSearchQuery,
+    setFilters,
+    hasActiveFilters
+  } = usePhillboardFiltering(dataToFilter);
   
   // Check if user can delete this phillboard
   const canDeletePhillboard = (phillboard: Phillboard) => {
@@ -48,36 +62,62 @@ export function FeedContent({ phillboards, isLoading, activityFeed = [] }: FeedC
   if (isLoading) {
     return <LoadingState />;
   }
-  
-  if (phillboards.length === 0 || (activityFeed && activityFeed.length === 0)) {
-    return <EmptyState />;
-  }
 
   return (
     <>
       <div className="space-y-4">
-        {activityFeed && activityFeed.length > 0 ? (
-          // Render activity feed if available
-          activityFeed.map((activity, index) => (
-            <ActivityItem
-              key={`${activity.phillboard.id}-${index}`}
-              activity={activity}
-              canDelete={canDeletePhillboard(activity.phillboard)}
-              onDeleteClick={handleDeleteClick}
-              onUsernameClick={handleUsernameClick}
-            />
-          ))
+        {/* Search and Filter Controls */}
+        <SearchAndFilter
+          onSearch={setSearchQuery}
+          onFilterChange={setFilters}
+          searchPlaceholder="Search phillboards, users, content..."
+        />
+        
+        {/* Results count */}
+        {hasActiveFilters && (
+          <div className="text-sm text-gray-400">
+            Showing {filteredItems.length} of {dataToFilter.length} phillboards
+          </div>
+        )}
+        
+        {/* Results */}
+        {filteredItems.length === 0 ? (
+          hasActiveFilters ? (
+            <div className="text-center py-8 text-gray-400">
+              <p>No phillboards match your search criteria</p>
+              <p className="text-sm mt-1">Try adjusting your filters or search terms</p>
+            </div>
+          ) : (
+            <EmptyState />
+          )
         ) : (
-          // Fall back to standard phillboard list
-          phillboards.map((phillboard) => (
-            <PhillboardItem
-              key={phillboard.id}
-              phillboard={phillboard}
-              canDelete={canDeletePhillboard(phillboard)}
-              onDeleteClick={handleDeleteClick}
-              onUsernameClick={handleUsernameClick}
-            />
-          ))
+          <div className="space-y-4">
+            {activityFeed && activityFeed.length > 0 ? (
+              // Render activity feed if available - match filtered items back to activities
+              activityFeed
+                .filter(activity => filteredItems.includes(activity.phillboard))
+                .map((activity, index) => (
+                  <ActivityItem
+                    key={`${activity.phillboard.id}-${index}`}
+                    activity={activity}
+                    canDelete={canDeletePhillboard(activity.phillboard)}
+                    onDeleteClick={handleDeleteClick}
+                    onUsernameClick={handleUsernameClick}
+                  />
+                ))
+            ) : (
+              // Fall back to standard phillboard list
+              filteredItems.map((phillboard) => (
+                <PhillboardItem
+                  key={phillboard.id}
+                  phillboard={phillboard}
+                  canDelete={canDeletePhillboard(phillboard)}
+                  onDeleteClick={handleDeleteClick}
+                  onUsernameClick={handleUsernameClick}
+                />
+              ))
+            )}
+          </div>
         )}
       </div>
       
