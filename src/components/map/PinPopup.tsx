@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Dialog,
@@ -33,13 +34,17 @@ interface PinPopupProps {
   onClose: () => void;
   onPinDelete: () => void;
   onPinUpdate: (updatedPin: MapPinType) => void;
+  onEditDialogStateChange?: (isOpen: boolean) => void;
+  onDeleteDialogStateChange?: (isOpen: boolean) => void;
 }
 
 export function PinPopup({ 
   selectedPin, 
   onClose,
   onPinDelete,
-  onPinUpdate
+  onPinUpdate,
+  onEditDialogStateChange,
+  onDeleteDialogStateChange
 }: PinPopupProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -68,6 +73,19 @@ export function PinPopup({
     
     fetchEditData();
   }, [selectedPin, user]);
+
+  // Notify parent about dialog state changes
+  useEffect(() => {
+    if (onEditDialogStateChange) {
+      onEditDialogStateChange(isEditDialogOpen);
+    }
+  }, [isEditDialogOpen, onEditDialogStateChange]);
+
+  useEffect(() => {
+    if (onDeleteDialogStateChange) {
+      onDeleteDialogStateChange(isDeleteDialogOpen);
+    }
+  }, [isDeleteDialogOpen, onDeleteDialogStateChange]);
   
   if (!selectedPin) return null;
   

@@ -20,6 +20,8 @@ interface MapContainerProps {
   onPinUpdate: (pin: MapPin) => void;
   onToggleAdminMode: () => void;
   userIsAdmin: boolean;
+  isEditDialogOpen?: boolean;
+  isDeleteDialogOpen?: boolean;
 }
 
 export function MapContainer({
@@ -34,7 +36,9 @@ export function MapContainer({
   onPinDelete,
   onPinUpdate,
   onToggleAdminMode,
-  userIsAdmin
+  userIsAdmin,
+  isEditDialogOpen = false,
+  isDeleteDialogOpen = false
 }: MapContainerProps) {
   const {
     filteredItems: filteredPins,
@@ -42,6 +46,9 @@ export function MapContainer({
     setFilters,
     hasActiveFilters
   } = usePhillboardFiltering(mapPins);
+
+  // Prevent auto-centering when any dialog is open
+  const preventAutoCenter = isEditDialogOpen || isDeleteDialogOpen;
 
   return (
     <>
@@ -69,6 +76,7 @@ export function MapContainer({
         onPinSelect={onPinSelect}
         onMapClick={onMapClick}
         isAdminMode={isAdminMode}
+        preventAutoCenter={preventAutoCenter}
       />
       
       {/* Top bar with location info */}

@@ -11,6 +11,7 @@ interface MapBackgroundProps {
   onPinSelect: (pin: MapPin) => void;
   onMapClick?: (location: UserLocation) => void;
   isAdminMode?: boolean;
+  preventAutoCenter?: boolean;
   children?: ReactNode;
 }
 
@@ -22,6 +23,7 @@ export function MapBackground({
   onPinSelect,
   onMapClick,
   isAdminMode = false,
+  preventAutoCenter = false,
   children 
 }: MapBackgroundProps) {
   return (
@@ -35,6 +37,7 @@ export function MapBackground({
           isLoading={isLoading}
           onMapClick={onMapClick}
           isAdminMode={isAdminMode}
+          preventAutoCenter={preventAutoCenter}
         />
         
         {/* Error message */}

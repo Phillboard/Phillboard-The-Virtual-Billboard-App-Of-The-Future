@@ -16,6 +16,7 @@ interface GoogleMapComponentProps {
   isLoading: boolean;
   onMapClick?: (location: UserLocation) => void;
   isAdminMode?: boolean;
+  preventAutoCenter?: boolean;
 }
 
 export function GoogleMapComponent({ 
@@ -24,7 +25,8 @@ export function GoogleMapComponent({
   onPinSelect,
   isLoading,
   onMapClick,
-  isAdminMode = false
+  isAdminMode = false,
+  preventAutoCenter = false
 }: GoogleMapComponentProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -60,13 +62,13 @@ export function GoogleMapComponent({
     setMapReady(false);
   }, []);
 
-  // Update map center when user location changes without re-rendering the entire map
+  // Update map center when user location changes, but only if not prevented
   useEffect(() => {
-    if (mapReady && mapRef.current && userLocation) {
+    if (mapReady && mapRef.current && userLocation && !preventAutoCenter) {
       console.log("Updating map center to:", userLocation);
       mapRef.current.panTo({ lat: userLocation.lat, lng: userLocation.lng });
     }
-  }, [userLocation, mapReady]);
+  }, [userLocation, mapReady, preventAutoCenter]);
 
   // Handle map click for admin mode
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {

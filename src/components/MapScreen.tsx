@@ -27,6 +27,8 @@ export function MapScreen() {
   } = useMapState();
   
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { user, isAdmin } = useAuth();
   const userIsAdmin = isAdmin(user);
   
@@ -98,6 +100,8 @@ export function MapScreen() {
         onPinUpdate={handlePinUpdate}
         onToggleAdminMode={toggleAdminMode}
         userIsAdmin={userIsAdmin}
+        isEditDialogOpen={isEditDialogOpen}
+        isDeleteDialogOpen={isDeleteDialogOpen}
       />
       
       {/* FAB for creating a new phillboard */}
