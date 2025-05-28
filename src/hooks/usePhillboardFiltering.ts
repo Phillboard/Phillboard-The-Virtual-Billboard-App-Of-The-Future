@@ -43,7 +43,7 @@ export function usePhillboardFiltering<T extends PhillboardItem>(items: T[]) {
     }
 
     // Apply time range filter
-    if (filters.timeRange !== "all" && 'created_at' in filtered[0]) {
+    if (filters.timeRange !== "all" && filtered.length > 0 && 'created_at' in filtered[0]) {
       const now = new Date();
       const cutoffDate = new Date();
 
@@ -72,17 +72,23 @@ export function usePhillboardFiltering<T extends PhillboardItem>(items: T[]) {
       switch (filters.sortBy) {
         case "oldest":
           if ('created_at' in a && 'created_at' in b) {
-            return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+            const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+            return dateA - dateB;
           }
           return 0;
         case "newest":
           if ('created_at' in a && 'created_at' in b) {
-            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+            const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+            return dateB - dateA;
           }
           return 0;
         case "distance":
           if ('distanceValue' in a && 'distanceValue' in b) {
-            return (a.distanceValue || 0) - (b.distanceValue || 0);
+            const distA = typeof a.distanceValue === 'number' ? a.distanceValue : 0;
+            const distB = typeof b.distanceValue === 'number' ? b.distanceValue : 0;
+            return distA - distB;
           }
           return 0;
         case "username":
