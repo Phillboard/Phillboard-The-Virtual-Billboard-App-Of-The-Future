@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/AdminPage";
 import AdminAPIPage from "./pages/AdminAPIPage";
+import APIDocsPage from "./pages/APIDocsPage";
 import Auth from "./pages/Auth";
 import ARView from "./pages/ARView";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/admin/api" element={<AdminAPIPage />} />
+            <Route path="/api-docs" element={<APIDocsPage />} />
             <Route path="/ar-view" element={<ARView />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
