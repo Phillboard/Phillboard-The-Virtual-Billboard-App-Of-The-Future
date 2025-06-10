@@ -37,6 +37,14 @@ export function GoogleMapComponent({
   const [mapReady, setMapReady] = useState(false);
   const [loadTimeout, setLoadTimeout] = useState(false);
   const lastUserLocationRef = useRef<UserLocation | null>(null);
+  const [initialCenter, setInitialCenter] = useState<UserLocation | null>(null);
+  
+  // Set initial center when user location is first available
+  useEffect(() => {
+    if (userLocation && !initialCenter) {
+      setInitialCenter(userLocation);
+    }
+  }, [userLocation, initialCenter]);
   
   // Handle timeout for map loading
   useEffect(() => {
@@ -98,6 +106,9 @@ export function GoogleMapComponent({
     return <MapLoadingState />;
   }
   
+  // Use initial center or user location, but don't change center prop when preventAutoCenter is true
+  const mapCenter = initialCenter || userLocation || defaultCenter;
+  
   // If we hit the timeout but Google Maps loaded, continue with the map
   return (
     <div className="absolute inset-0">
@@ -106,7 +117,7 @@ export function GoogleMapComponent({
         {isLoaded && (
           <GoogleMap
             mapContainerStyle={containerStyle}
-            center={userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : defaultCenter}
+            center={mapCenter}
             zoom={15}
             onLoad={onLoad}
             onUnmount={onUnmount}
