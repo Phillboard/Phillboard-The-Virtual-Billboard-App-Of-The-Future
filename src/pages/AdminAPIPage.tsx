@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Code, Play, Save, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { APIKeyManager } from "@/components/admin/APIKeyManager";
 
 const AdminAPIPage = () => {
   const { user, isAdmin } = useAuth();
@@ -118,124 +119,156 @@ serve(async (req) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Development Area */}
-        <div className="lg:col-span-2">
+      <Tabs defaultValue="development" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="development">Function Development</TabsTrigger>
+          <TabsTrigger value="keys">API Key Management</TabsTrigger>
+          <TabsTrigger value="monitoring">Monitoring & Logs</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="development" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Development Area */}
+            <div className="lg:col-span-2">
+              <Card className="bg-black/60 backdrop-blur-md border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-neon-cyan">Edge Function Editor</CardTitle>
+                  <CardDescription>
+                    Create serverless functions that run on the edge. These functions can handle API requests, 
+                    process data, and integrate with external services.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="functionName">Function Name</Label>
+                    <Input
+                      id="functionName"
+                      placeholder="my-api-function"
+                      value={functionName}
+                      onChange={(e) => setFunctionName(e.target.value)}
+                      className="bg-black/40 border-white/20"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="functionCode">Function Code</Label>
+                    <Textarea
+                      id="functionCode"
+                      placeholder="Enter your TypeScript/JavaScript code here..."
+                      value={functionCode}
+                      onChange={(e) => setFunctionCode(e.target.value)}
+                      className="bg-black/40 border-white/20 font-mono text-sm min-h-[400px]"
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter className="flex gap-2">
+                  <Button 
+                    onClick={handleSaveFunction}
+                    className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Function
+                  </Button>
+                  <Button 
+                    onClick={handleTestFunction}
+                    variant="outline"
+                    className="bg-transparent border-white/20 hover:bg-white/10"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Test Function
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Quick Actions */}
+              <Card className="bg-black/60 backdrop-blur-md border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-sm">Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start bg-transparent border-white/20 hover:bg-white/10"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    View Existing Functions
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start bg-transparent border-white/20 hover:bg-white/10"
+                  >
+                    <Code className="h-4 w-4 mr-2" />
+                    Function Templates
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Documentation */}
+              <Card className="bg-black/60 backdrop-blur-md border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-sm">API Documentation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Textarea
+                    placeholder="Document your API endpoints, parameters, and responses..."
+                    value={apiDocumentation}
+                    onChange={(e) => setApiDocumentation(e.target.value)}
+                    className="bg-black/40 border-white/20 text-sm min-h-[200px]"
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Examples */}
+              <Card className="bg-black/60 backdrop-blur-md border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-sm">Common Patterns</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-xs">
+                  <div className="p-2 bg-black/40 rounded border border-white/10">
+                    <p className="text-neon-cyan mb-1">REST API Endpoint</p>
+                    <p className="text-gray-400">Handle GET, POST, PUT, DELETE requests</p>
+                  </div>
+                  <div className="p-2 bg-black/40 rounded border border-white/10">
+                    <p className="text-neon-cyan mb-1">Database Operations</p>
+                    <p className="text-gray-400">Query and update Supabase tables</p>
+                  </div>
+                  <div className="p-2 bg-black/40 rounded border border-white/10">
+                    <p className="text-neon-cyan mb-1">External API Integration</p>
+                    <p className="text-gray-400">Call third-party services securely</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="keys">
+          <APIKeyManager />
+        </TabsContent>
+
+        <TabsContent value="monitoring">
           <Card className="bg-black/60 backdrop-blur-md border-white/10">
             <CardHeader>
-              <CardTitle className="text-neon-cyan">Edge Function Editor</CardTitle>
+              <CardTitle className="text-neon-cyan">API Monitoring & Logs</CardTitle>
               <CardDescription>
-                Create serverless functions that run on the edge. These functions can handle API requests, 
-                process data, and integrate with external services.
+                Monitor your API performance, track usage, and view error logs.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="functionName">Function Name</Label>
-                <Input
-                  id="functionName"
-                  placeholder="my-api-function"
-                  value={functionName}
-                  onChange={(e) => setFunctionName(e.target.value)}
-                  className="bg-black/40 border-white/20"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="functionCode">Function Code</Label>
-                <Textarea
-                  id="functionCode"
-                  placeholder="Enter your TypeScript/JavaScript code here..."
-                  value={functionCode}
-                  onChange={(e) => setFunctionCode(e.target.value)}
-                  className="bg-black/40 border-white/20 font-mono text-sm min-h-[400px]"
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex gap-2">
-              <Button 
-                onClick={handleSaveFunction}
-                className="bg-neon-cyan/20 hover:bg-neon-cyan/30 text-white border border-neon-cyan"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save Function
-              </Button>
-              <Button 
-                onClick={handleTestFunction}
-                variant="outline"
-                className="bg-transparent border-white/20 hover:bg-white/10"
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Test Function
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Quick Actions */}
-          <Card className="bg-black/60 backdrop-blur-md border-white/10">
-            <CardHeader>
-              <CardTitle className="text-sm">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full justify-start bg-transparent border-white/20 hover:bg-white/10"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                View Existing Functions
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full justify-start bg-transparent border-white/20 hover:bg-white/10"
-              >
-                <Code className="h-4 w-4 mr-2" />
-                Function Templates
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Documentation */}
-          <Card className="bg-black/60 backdrop-blur-md border-white/10">
-            <CardHeader>
-              <CardTitle className="text-sm">API Documentation</CardTitle>
-            </CardHeader>
             <CardContent>
-              <Textarea
-                placeholder="Document your API endpoints, parameters, and responses..."
-                value={apiDocumentation}
-                onChange={(e) => setApiDocumentation(e.target.value)}
-                className="bg-black/40 border-white/20 text-sm min-h-[200px]"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Examples */}
-          <Card className="bg-black/60 backdrop-blur-md border-white/10">
-            <CardHeader>
-              <CardTitle className="text-sm">Common Patterns</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-xs">
-              <div className="p-2 bg-black/40 rounded border border-white/10">
-                <p className="text-neon-cyan mb-1">REST API Endpoint</p>
-                <p className="text-gray-400">Handle GET, POST, PUT, DELETE requests</p>
-              </div>
-              <div className="p-2 bg-black/40 rounded border border-white/10">
-                <p className="text-neon-cyan mb-1">Database Operations</p>
-                <p className="text-gray-400">Query and update Supabase tables</p>
-              </div>
-              <div className="p-2 bg-black/40 rounded border border-white/10">
-                <p className="text-neon-cyan mb-1">External API Integration</p>
-                <p className="text-gray-400">Call third-party services securely</p>
+              <div className="text-center py-8 text-gray-400">
+                <Code className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>Monitoring dashboard coming soon...</p>
+                <p className="text-sm mt-2">This will show real-time API metrics, error rates, and usage analytics.</p>
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
