@@ -47,8 +47,8 @@ export function MapContainer({
     hasActiveFilters
   } = usePhillboardFiltering(mapPins);
 
-  // Prevent auto-centering when any dialog is open
-  const preventAutoCenter = isEditDialogOpen || isDeleteDialogOpen;
+  // Prevent auto-centering when any dialog is open OR when a pin is selected
+  const preventAutoCenter = isEditDialogOpen || isDeleteDialogOpen || !!selectedPin;
 
   return (
     <>

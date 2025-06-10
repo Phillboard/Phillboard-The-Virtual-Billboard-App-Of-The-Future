@@ -36,6 +36,7 @@ export function GoogleMapComponent({
   const mapRef = useRef<google.maps.Map | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [loadTimeout, setLoadTimeout] = useState(false);
+  const lastUserLocationRef = useRef<UserLocation | null>(null);
   
   // Handle timeout for map loading
   useEffect(() => {
@@ -62,11 +63,17 @@ export function GoogleMapComponent({
     setMapReady(false);
   }, []);
 
-  // Update map center when user location changes, but only if not prevented
+  // Update map center when user location changes, but only if not prevented and location actually changed
   useEffect(() => {
     if (mapReady && mapRef.current && userLocation && !preventAutoCenter) {
-      console.log("Updating map center to:", userLocation);
-      mapRef.current.panTo({ lat: userLocation.lat, lng: userLocation.lng });
+      // Only update if this is a new location (not just a re-render)
+      if (!lastUserLocationRef.current || 
+          lastUserLocationRef.current.lat !== userLocation.lat || 
+          lastUserLocationRef.current.lng !== userLocation.lng) {
+        console.log("Updating map center to:", userLocation);
+        mapRef.current.panTo({ lat: userLocation.lat, lng: userLocation.lng });
+        lastUserLocationRef.current = userLocation;
+      }
     }
   }, [userLocation, mapReady, preventAutoCenter]);
 
