@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +10,7 @@ interface AuthContextProps {
   session: Session | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
   isAdmin: (user: User | null) => boolean;
@@ -70,6 +72,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error(error.message || "Error signing in with Google");
+      throw error;
+    }
+  };
+
   const signUp = async (email: string, password: string, username: string) => {
     try {
       const { error } = await supabase.auth.signUp({
@@ -109,6 +127,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     session,
     signIn,
     signUp,
+    signInWithGoogle,
     signOut,
     loading,
     isAdmin,
