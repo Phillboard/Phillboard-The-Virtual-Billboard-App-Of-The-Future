@@ -12,7 +12,6 @@ import APIDocsPage from "./pages/APIDocsPage";
 import Auth from "./pages/Auth";
 import ARView from "./pages/ARView";
 import { AuthProvider } from "./contexts/AuthContext";
-import { Toaster as HotToaster } from 'react-hot-toast';
 
 const queryClient = new QueryClient();
 
@@ -23,11 +22,6 @@ const App = () => (
         <AuthProvider>
           <Toaster />
           <Sonner />
-          <HotToaster 
-            toastOptions={{ 
-              style: { background: '#222', color: '#fff' }
-            }} 
-          />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -35,7 +29,6 @@ const App = () => (
             <Route path="/admin/api" element={<AdminAPIPage />} />
             <Route path="/api-docs" element={<APIDocsPage />} />
             <Route path="/ar-view" element={<ARView />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

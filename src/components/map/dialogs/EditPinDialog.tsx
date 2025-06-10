@@ -24,7 +24,6 @@ export function EditPinDialog({
   selectedPin,
   onUpdatePin
 }: EditPinDialogProps) {
-  const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
   
   const {

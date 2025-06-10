@@ -1,8 +1,7 @@
 
-import { useState } from "react";
 import { Button } from "../ui/button";
 import { Trash2 } from "lucide-react";
-import { Phillboard, convertToMapPin } from "./types";
+import { Phillboard } from "./types";
 import { formatTime, getPlacementTypeLabel, getLocationDescription } from "./utils";
 
 interface PhillboardItemProps {
@@ -14,9 +13,7 @@ interface PhillboardItemProps {
 
 export function PhillboardItem({ phillboard, canDelete, onDeleteClick, onUsernameClick }: PhillboardItemProps) {
   return (
-    <div 
-      className="p-4 rounded-lg border border-gray-800 bg-black/60 transition-all hover:border-cyan-900"
-    >
+    <div className="p-4 rounded-lg border border-gray-800 bg-black/60 transition-all hover:border-cyan-900">
       <div className="flex justify-between items-start mb-1">
         <h3 className="font-semibold text-cyan-400">{phillboard.title}</h3>
         <div className="flex items-center gap-2">

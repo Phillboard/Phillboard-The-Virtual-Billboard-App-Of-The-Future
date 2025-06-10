@@ -7,7 +7,6 @@ import { updatePhillboardInDatabase } from "./updateService";
 import { getPlacementType } from "./placementUtils";
 import { handleServiceError } from "./errorHandling";
 
-// Re-export all functions for backward compatibility
 export * from "./placementUtils";
 export * from "./editCountService";
 export * from "./paymentService";
@@ -15,9 +14,6 @@ export * from "./updateService";
 export * from "./types";
 export * from "./errorHandling";
 
-/**
- * Handle the entire phillboard edit process
- */
 export const editPhillboard = async (
   phillboardId: string | number,
   userId: string,
@@ -26,24 +22,19 @@ export const editPhillboard = async (
   try {
     console.log("Starting phillboard edit process:", { phillboardId, userId, updates });
     
-    // Calculate the cost
     const editCost = await calculateEditCost(phillboardId, userId);
     console.log(`Edit will cost: $${editCost}`);
     
-    // Process the payment
     const paymentResult = await processEditPayment(editCost, userId, phillboardId);
     console.log("Payment processed:", paymentResult);
     
-    // Record this edit in history
     await recordEditHistory(phillboardId, userId, editCost);
     
-    // Pay the original creator if applicable
     if (paymentResult.originalCreatorId) {
       console.log("Paying original creator:", paymentResult.originalCreatorId);
       await payOriginalCreator(paymentResult.originalCreatorId, userId, editCost);
     }
     
-    // Update the phillboard
     try {
       const updatedPhillboard = await updatePhillboardInDatabase(phillboardId, updates);
       console.log("Phillboard successfully updated", updatedPhillboard);
@@ -55,7 +46,6 @@ export const editPhillboard = async (
       };
     } catch (updateError) {
       console.error("Failed to update phillboard:", updateError);
-      // Payment was successful but update failed
       return {
         success: false,
         message: "Payment processed but phillboard update failed. Please try again.",
@@ -63,7 +53,6 @@ export const editPhillboard = async (
       };
     }
   } catch (error) {
-    // Use our centralized error handler
     console.error("Error in editPhillboard:", error);
     const handledError = handleServiceError(
       error, 

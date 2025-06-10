@@ -1,13 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-/**
- * Get current balance for authenticated user
- * @returns User balance or null if not authenticated
- */
 export async function getUserBalance(): Promise<number | null> {
   try {
-    // Check if we have user authentication
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return null;
     
@@ -25,16 +20,11 @@ export async function getUserBalance(): Promise<number | null> {
   }
 }
 
-/**
- * Get transaction history for user's phillboard placements
- */
 export async function getUserTransactions() {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return [];
     
-    // This would be where we fetch transaction history if we had a transactions table
-    // For now, we'll just return an empty array
     return [];
   } catch (err) {
     console.error("Error fetching user transactions:", err);
