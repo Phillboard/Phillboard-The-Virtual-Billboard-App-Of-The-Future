@@ -45,11 +45,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = (user: User | null): boolean => {
     if (!user || !user.email) return false;
     
-    // Check for specific admin email or @mopads.com domain
+    // Check for specific admin email or admin domains
     return user.email === "admin@mopads.com" || 
+           user.email === "michaelurvan@gmail.com" ||
            user.email.endsWith("@mopads.com") ||
            user.email.endsWith("@lovable.ai") ||
-           user.email.endsWith("@phillboards.com"); // Added phillboards.com domain
+           user.email.endsWith("@phillboards.com");
   };
 
   const signIn = async (email: string, password: string) => {
