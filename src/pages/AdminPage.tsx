@@ -1,10 +1,9 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { UpdateTimestampSection } from "@/components/admin/UpdateTimestampSection";
 import { DummyDataButton } from "@/components/admin/DummyDataButton";
 import { UserBalancesSection } from "@/components/admin/UserBalancesSection";
 import { Button } from "@/components/ui/button";
-import { Code } from "lucide-react";
+import { Code, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const AdminPage = () => {
@@ -51,15 +50,26 @@ const AdminPage = () => {
             <p className="text-sm text-gray-400 mb-4">
               Create and manage custom APIs for the project. Build edge functions, configure endpoints, and handle API logic.
             </p>
-            <Link to="/admin/api">
-              <Button 
-                variant="outline"
-                className="bg-transparent border-white/20 hover:bg-white/10 text-neon-cyan"
-              >
-                <Code className="mr-2 h-4 w-4" />
-                Open API Development
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link to="/admin/api">
+                <Button 
+                  variant="outline"
+                  className="bg-transparent border-white/20 hover:bg-white/10 text-neon-cyan"
+                >
+                  <Code className="mr-2 h-4 w-4" />
+                  Open API Development
+                </Button>
+              </Link>
+              <Link to="/api-docs">
+                <Button 
+                  variant="outline"
+                  className="bg-transparent border-white/20 hover:bg-white/10 text-blue-400"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  View API Documentation
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       ) : (
