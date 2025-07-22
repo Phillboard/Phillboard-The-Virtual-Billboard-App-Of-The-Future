@@ -105,20 +105,37 @@ function SimulatedARContent({ pin, viewMode }: SimulatedARContentProps) {
 }
 
 /**
- * Simulated background to represent real world view
+ * Realistic outdoor environment simulation
  */
 function SimulatedBackground() {
   return (
     <div className="absolute inset-0 -z-10">
-      <div className="w-full h-full bg-gradient-to-b from-sky-300 via-sky-500 to-sky-700 relative">
-        {/* Add some subtle patterns to simulate environment */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
-          <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-white/5 rounded-full blur-lg" />
-          <div className="absolute bottom-1/4 left-1/2 w-40 h-20 bg-white/5 rounded-lg blur-lg" />
+      <div className="w-full h-full relative overflow-hidden">
+        {/* Sky with clouds */}
+        <div className="w-full h-2/3 bg-gradient-to-b from-blue-400 via-blue-300 to-blue-200 relative">
+          <div className="absolute top-20 left-1/4 w-32 h-16 bg-white/70 rounded-full blur-sm" />
+          <div className="absolute top-32 right-1/3 w-24 h-12 bg-white/60 rounded-full blur-sm" />
+          <div className="absolute top-16 right-1/4 w-20 h-10 bg-white/50 rounded-full blur-sm" />
         </div>
-        {/* Horizon line */}
+        
+        {/* Ground/street level */}
+        <div className="w-full h-1/3 bg-gradient-to-t from-gray-600 via-gray-500 to-gray-400 relative">
+          {/* Sidewalk texture */}
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gray-300 border-t border-gray-400" />
+          
+          {/* Street elements */}
+          <div className="absolute bottom-16 left-10 w-3 h-12 bg-gray-800 rounded-sm" /> {/* Lamppost */}
+          <div className="absolute bottom-20 right-20 w-8 h-16 bg-green-600 rounded-full" /> {/* Tree */}
+          <div className="absolute bottom-16 right-1/2 w-12 h-8 bg-red-600 rounded" /> {/* Mailbox */}
+          
+          {/* Building silhouettes */}
+          <div className="absolute bottom-16 left-1/4 w-16 h-20 bg-gray-700 opacity-50" />
+          <div className="absolute bottom-16 right-1/3 w-20 h-24 bg-gray-600 opacity-50" />
+        </div>
+        
+        {/* Perspective lines for depth */}
         <div className="absolute bottom-1/3 left-0 right-0 h-px bg-white/20" />
+        <div className="absolute bottom-1/4 left-1/4 right-1/4 h-px bg-white/10" />
       </div>
     </div>
   );
@@ -168,20 +185,41 @@ export function SimulatedARView({ pin, viewMode, onViewModeChange }: SimulatedAR
 
       {/* Instructions */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-sm py-2 px-4 rounded-full text-xs text-white z-20">
-        Click and drag to orbit • Scroll to zoom • Click phillboard to interact
+        Walk around • Look up/down • Get closer to interact with phillboards
       </div>
       
       {/* 3D Scene */}
       <div className="h-screen w-full">
         <Canvas
-          camera={{ position: [0, 0, 3], fov: 60 }}
+          camera={{ position: [0, 1.6, 2], fov: 75 }} // Eye-level camera height
           onCreated={({ gl }) => {
             gl.setClearColor('#000000', 0); // Transparent background
           }}
         >
-          <ambientLight intensity={0.8} />
-          <pointLight position={[5, 5, 5]} intensity={1} />
-          <directionalLight position={[-5, 5, 5]} intensity={0.8} castShadow />
+          <ambientLight intensity={0.9} />
+          <directionalLight position={[10, 10, 5]} intensity={0.7} castShadow />
+          <pointLight position={[0, 5, 0]} intensity={0.5} />
+          
+          {/* Ground plane */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]} receiveShadow>
+            <planeGeometry args={[20, 20]} />
+            <meshStandardMaterial color="#666666" opacity={0.3} transparent />
+          </mesh>
+          
+          {/* Environmental elements */}
+          <mesh position={[-3, 0, -2]} castShadow>
+            <cylinderGeometry args={[0.1, 0.1, 4]} />
+            <meshStandardMaterial color="#444444" />
+          </mesh>
+          
+          <mesh position={[2, -0.5, -3]} castShadow>
+            <cylinderGeometry args={[0.3, 0.3, 1]} />
+            <meshStandardMaterial color="#8B4513" />
+          </mesh>
+          <mesh position={[2, 1, -3]} castShadow>
+            <sphereGeometry args={[0.8]} />
+            <meshStandardMaterial color="#228B22" />
+          </mesh>
           
           <SimulatedARContent pin={pin} viewMode={viewMode} />
           
@@ -192,7 +230,8 @@ export function SimulatedARView({ pin, viewMode, onViewModeChange }: SimulatedAR
             enableRotate={true}
             minDistance={0.5}
             maxDistance={8}
-            maxPolarAngle={Math.PI / 1.2}
+            maxPolarAngle={Math.PI / 2.2}
+            minPolarAngle={Math.PI / 6}
             target={[0, 0, -1.5]}
           />
         </Canvas>
