@@ -105,49 +105,21 @@ function SimulatedARContent({ pin, viewMode }: SimulatedARContentProps) {
 }
 
 /**
- * Camera background to simulate real world view
+ * Simulated background to represent real world view
  */
-function CameraBackground() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-
-  useEffect(() => {
-    const initCamera = async () => {
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'environment' } 
-        });
-        setStream(mediaStream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-        }
-      } catch (error) {
-        console.log('Camera not available, using gradient background');
-      }
-    };
-
-    initCamera();
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, []);
-
+function SimulatedBackground() {
   return (
     <div className="absolute inset-0 -z-10">
-      {stream ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full bg-gradient-to-b from-sky-300 via-sky-500 to-sky-700" />
-      )}
+      <div className="w-full h-full bg-gradient-to-b from-sky-300 via-sky-500 to-sky-700 relative">
+        {/* Add some subtle patterns to simulate environment */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
+          <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-white/5 rounded-full blur-lg" />
+          <div className="absolute bottom-1/4 left-1/2 w-40 h-20 bg-white/5 rounded-lg blur-lg" />
+        </div>
+        {/* Horizon line */}
+        <div className="absolute bottom-1/3 left-0 right-0 h-px bg-white/20" />
+      </div>
     </div>
   );
 }
@@ -172,8 +144,8 @@ export function SimulatedARView({ pin, viewMode, onViewModeChange }: SimulatedAR
 
   return (
     <div className="min-h-screen relative">
-      {/* Camera background */}
-      <CameraBackground />
+      {/* Simulated background */}
+      <SimulatedBackground />
       
       {/* UI Controls */}
       <div className="absolute top-4 left-4 z-20">
