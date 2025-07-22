@@ -10,6 +10,7 @@ import ARContent from "@/components/ar/ARContent";
 import CustomARButton from "@/components/ar/CustomARButton";
 import UnsupportedARView from "@/components/ar/UnsupportedARView";
 import BackButton from "@/components/ar/BackButton";
+import SimulatedARView from "@/components/ar/SimulatedARView";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -38,6 +39,7 @@ const ARView = () => {
   const [pin, setPin] = useState<MapPin | null>(null);
   const [arSupported, setARSupported] = useState<boolean | null>(null);
   const [viewMode, setViewMode] = useState<ARViewMode>(ARViewMode.HUMAN);
+  const [useSimulatedAR, setUseSimulatedAR] = useState(true); // Default to simulated for development
   
   useEffect(() => {
     // Check if WebXR/AR is supported
@@ -71,8 +73,35 @@ const ARView = () => {
   const toggleViewMode = () => {
     setViewMode(viewMode === ARViewMode.HUMAN ? ARViewMode.BILLBOARD : ARViewMode.HUMAN);
   };
+
+  const toggleARMode = () => {
+    setUseSimulatedAR(!useSimulatedAR);
+  };
   
-  // Early exit if WebXR is not supported
+  // Use simulated AR for development
+  if (useSimulatedAR) {
+    return (
+      <div className="relative">
+        <div className="absolute top-16 right-4 z-30">
+          <Button 
+            variant="secondary" 
+            size="sm"
+            onClick={toggleARMode}
+            className="text-xs"
+          >
+            Switch to Real AR
+          </Button>
+        </div>
+        <SimulatedARView 
+          pin={pin} 
+          viewMode={viewMode} 
+          onViewModeChange={setViewMode}
+        />
+      </div>
+    );
+  }
+  
+  // Early exit if WebXR is not supported (for real AR mode)
   if (arSupported === false) {
     return <UnsupportedARView onBack={handleBack} onTryDemo={handleTryDemo} />;
   }
@@ -83,7 +112,15 @@ const ARView = () => {
         <BackButton onClick={handleBack} />
       </div>
       
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <Button 
+          variant="secondary" 
+          size="sm"
+          onClick={toggleARMode}
+          className="text-xs"
+        >
+          Switch to Simulated AR
+        </Button>
         <Button 
           variant="outline" 
           className="bg-black/60 border-white/20 text-xs"
