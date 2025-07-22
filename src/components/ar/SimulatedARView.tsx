@@ -40,22 +40,22 @@ function SimulatedARContent({ pin, viewMode }: SimulatedARContentProps) {
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}
     >
-      {/* Main phillboard panel */}
-      <mesh scale={[0.5, 0.3, 0.05]} castShadow receiveShadow>
+      {/* Main phillboard panel - billboard size (14ft x 8ft) */}
+      <mesh scale={[4.3, 2.4, 0.1]} castShadow receiveShadow>
         <boxGeometry />
         <meshStandardMaterial 
           color={hovered ? "#00FFCC" : "#1a1a1a"} 
-          opacity={0.9} 
+          opacity={0.95} 
           transparent
           emissive={hovered ? "#00FFCC" : "#000000"}
-          emissiveIntensity={hovered ? 0.3 : 0}
+          emissiveIntensity={hovered ? 0.2 : 0}
         />
       </mesh>
       
       {/* Title */}
       <Text
-        position={[0, 0, 0.03]}
-        fontSize={0.08}
+        position={[0, 0.5, 0.06]}
+        fontSize={0.4}
         color="#ffffff"
         anchorX="center"
         anchorY="middle"
@@ -63,11 +63,10 @@ function SimulatedARContent({ pin, viewMode }: SimulatedARContentProps) {
       >
         {pin.title}
       </Text>
-      
       {/* Username */}
       <Text
-        position={[0, -0.08, 0.03]}
-        fontSize={0.04}
+        position={[0, -0.1, 0.06]}
+        fontSize={0.2}
         color="#cccccc"
         anchorX="center"
         anchorY="middle"
@@ -78,12 +77,12 @@ function SimulatedARContent({ pin, viewMode }: SimulatedARContentProps) {
       {/* Content */}
       {pin.content && (
         <Text
-          position={[0, -0.15, 0.03]}
-          fontSize={0.02}
+          position={[0, -0.5, 0.06]}
+          fontSize={0.15}
           color="white"
           anchorX="center"
           anchorY="middle"
-          maxWidth={0.4}
+          maxWidth={3.8}
         >
           {pin.content}
         </Text>
@@ -91,11 +90,11 @@ function SimulatedARContent({ pin, viewMode }: SimulatedARContentProps) {
       
       {/* Interactive glow effect */}
       {hovered && (
-        <mesh scale={[0.6, 0.4, 0.1]}>
+        <mesh scale={[4.5, 2.6, 0.15]}>
           <boxGeometry />
           <meshBasicMaterial 
             color="#00FFCC" 
-            opacity={0.2} 
+            opacity={0.15} 
             transparent
           />
         </mesh>
