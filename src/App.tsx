@@ -11,6 +11,7 @@ import AdminAPIPage from "./pages/AdminAPIPage";
 import APIDocsPage from "./pages/APIDocsPage";
 import Auth from "./pages/Auth";
 import ARView from "./pages/ARView";
+import SimulatedARPage from "./pages/SimulatedARPage";
 import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/admin/api" element={<AdminAPIPage />} />
             <Route path="/api-docs" element={<APIDocsPage />} />
             <Route path="/ar-view" element={<ARView />} />
+            <Route path="/simulated-ar" element={<SimulatedARPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
