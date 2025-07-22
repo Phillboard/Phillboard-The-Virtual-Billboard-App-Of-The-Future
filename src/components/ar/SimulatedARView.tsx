@@ -55,20 +55,20 @@ function SimulatedARContent({ pin, viewMode }: SimulatedARContentProps) {
       {/* Title */}
       <Text
         position={[0, 0, 0.03]}
-        fontSize={0.05}
-        color="#00FFFF"
+        fontSize={0.08}
+        color="#ffffff"
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter-bold.woff"
+        fontWeight="bold"
       >
         {pin.title}
       </Text>
       
       {/* Username */}
       <Text
-        position={[0, -0.1, 0.03]}
-        fontSize={0.03}
-        color="white"
+        position={[0, -0.08, 0.03]}
+        fontSize={0.04}
+        color="#cccccc"
         anchorX="center"
         anchorY="middle"
       >
@@ -174,16 +174,14 @@ export function SimulatedARView({ pin, viewMode, onViewModeChange }: SimulatedAR
       {/* 3D Scene */}
       <div className="h-screen w-full">
         <Canvas
-          camera={{ position: [0, 0, 3], fov: 75 }}
+          camera={{ position: [0, 0, 3], fov: 60 }}
           onCreated={({ gl }) => {
             gl.setClearColor('#000000', 0); // Transparent background
           }}
         >
-          <ambientLight intensity={0.6} />
-          <pointLight position={[10, 10, 10]} intensity={0.8} />
-          <directionalLight position={[-10, -10, 5]} intensity={0.5} />
-          
-          <Environment preset="city" background={false} />
+          <ambientLight intensity={0.8} />
+          <pointLight position={[5, 5, 5]} intensity={1} />
+          <directionalLight position={[-5, 5, 5]} intensity={0.8} castShadow />
           
           <SimulatedARContent pin={pin} viewMode={viewMode} />
           
@@ -192,9 +190,10 @@ export function SimulatedARView({ pin, viewMode, onViewModeChange }: SimulatedAR
             enablePan={true}
             enableZoom={true}
             enableRotate={true}
-            minDistance={1}
-            maxDistance={10}
-            maxPolarAngle={Math.PI / 1.5}
+            minDistance={0.5}
+            maxDistance={8}
+            maxPolarAngle={Math.PI / 1.2}
+            target={[0, 0, -1.5]}
           />
         </Canvas>
       </div>
